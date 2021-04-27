@@ -25,6 +25,8 @@ contract Arbitrator {
         bytes32 defendantEvidence;
         // status of the current dispute
         disputeStatus status;
+        // status of the current dispute
+        disputeRulings ruling;
         // addresses of users that voted
         mapping(address => bool) voters;
         // mapping from address of voters to yes or no
@@ -44,7 +46,8 @@ contract Arbitrator {
     }
     Dispute[] public disputes;
 
-    enum disputeStatus {PENDING, CLOSED, VOTING, GUILTY, INNOCENT, APPEAL}
+    enum disputeStatus {PENDING, CLOSED, VOTING, APPEAL}
+    enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
 
     constructor() public {
         owner = msg.sender;
@@ -66,6 +69,7 @@ contract Arbitrator {
         d.prosecutorEvidence = _disputeSummary;
         // set status and voting details
         d.status = disputeStatus.PENDING;
+        d.ruling = disputeRulings.PENDING;
         d.yeeCount = 0;
         d.nayCount = 0;
         d.openDate = today;
@@ -86,8 +90,22 @@ contract Arbitrator {
         // elif response == 1
         // counterDispute()
         // else
-        // startVote
+        // start vote
         disputes[disputeNumber].status = disputeStatus.VOTING;
+    }
+
+    // settle dispute
+    function settleDispute() private {
+        // transfer funds
+        // disputes[disputeNumber].ruling = disputeRulings.RULING;
+        // disputes[disputeNumber].status = disputeStatus.CLOSED;
+    }
+
+    // settle dispute
+    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) private {
+        // defense
+        disputes[disputeNumber].defendantEvidence = _counterSummary;
+        disputes[disputeNumber].amount = _comp;
     }
 
     // vote yee 1 or nay 0
