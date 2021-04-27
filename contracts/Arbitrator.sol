@@ -87,7 +87,7 @@ contract Arbitrator {
         require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
         disputes[disputeNumber].response = _response;
         if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
-            settleDispute(_response);
+            settleDispute(disputeNumber, _response);
         }
         else if (_response==2) { // plea: counter
             counterDispute(disputeNumber, _counterSummary, _comp);
@@ -99,7 +99,7 @@ contract Arbitrator {
     }
 
     // settle dispute
-    function settleDispute(_response) private {
+    function settleDispute(uint256 disputeNumber, uint256 _response) private {
         // to do: transfer funds
         // no contest or guilty ruling
         if (_response==0) {
