@@ -9,7 +9,6 @@ contract Arbitrator {
     uint256 yeeCount;
     uint256 nayCount;
 
-
     struct Dispute {
         // the person opening the dispute
         address prosecutor;
@@ -46,7 +45,7 @@ contract Arbitrator {
     }
     Dispute[] public disputes;
 
-    enum disputeStatus {PENDING, CLOSED, VOTING, APPEAL}
+    enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
 
     constructor() public {
@@ -82,26 +81,38 @@ contract Arbitrator {
     }
 
     // respond to dispute
-    function respondToDispute(uint256 disputeNumber, uint256 _response) public {
+    // to do: _counterSummary & _comp optional
+    function respondToDispute(uint256 disputeNumber, uint256 _response, bytes32 _counterSummary, uint256 _comp)
+    public {
         require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
         disputes[disputeNumber].response = _response;
-        // if response == 0
-        // settleDispute()
-        // elif response == 1
-        // counterDispute()
-        // else
+        if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
+            settleDispute(_response);
+        }
+        else if (_response==2) { // plea: counter
+            counterDispute(disputeNumber, _counterSummary, _comp);
+        }
         // start vote
-        disputes[disputeNumber].status = disputeStatus.VOTING;
+        else { // plea: innocent / otherwise
+            disputes[disputeNumber].status = disputeStatus.VOTING;
+        }
     }
 
     // settle dispute
-    function settleDispute() private {
-        // transfer funds
-        // disputes[disputeNumber].ruling = disputeRulings.RULING;
-        // disputes[disputeNumber].status = disputeStatus.CLOSED;
+    function settleDispute(_response) private {
+        // to do: transfer funds
+        // no contest or guilty ruling
+        if (_response==0) {
+            disputes[disputeNumber].ruling = disputeRulings.NOCONTEST;
+        }
+        else {
+            disputes[disputeNumber].ruling = disputeRulings.GUILTY;
+        }
+        // close dispute
+        disputes[disputeNumber].status = disputeStatus.CLOSED;
     }
 
-    // settle dispute
+    // counter dispute
     function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) private {
         // defense
         disputes[disputeNumber].defendantEvidence = _counterSummary;
@@ -119,13 +130,14 @@ contract Arbitrator {
         disputes[disputeNumber].voters[msg.sender] = true;
     }
 
-    //Outputs current vote counts
+    // outputs current vote counts
     function getVotes(uint256 disputeNumber) public view returns (uint yesVotes, uint noVotes) {
         return(disputes[disputeNumber].yeeCount, disputes[disputeNumber].nayCount);
     }
 
-    //Lets user know if their vote has been counted
-    function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
-        return disputes[disputeNumber].voters[msg.sender];
-    }
+    // // lets user know if their vote has been counted
+    // // status: WIP
+    // function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
+    //     return disputes[disputeNumber].voters[msg.sender];
+    // }
 }
