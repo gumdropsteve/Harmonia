@@ -53,7 +53,7 @@ contract Arbitrator {
         }
     
     // file a new dispute
-    function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary) 
+    function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 
     public returns(uint256 disputeNumber) {
         // set date info
         uint256 today = 0;
@@ -62,7 +62,7 @@ contract Arbitrator {
         Dispute memory d;
         // set parties
         d.prosecutor = msg.sender;
-        d.defendant = msg.sender;
+        d.defendant = _defendant;
         // add prosecutor's information
         d.amount = _compensationRequested;
         d.prosecutorEvidence = _disputeSummary;
