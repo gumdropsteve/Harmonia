@@ -1,7 +1,7 @@
 // contracts/Arbitrator.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
-// openDispute, vote, closeDispute, appealDispute, settleDispute, Deposit?
+
 import '@openzeppelin/contracts/utils/Address.sol';
 
 contract Arbitrator {
@@ -17,7 +17,7 @@ contract Arbitrator {
     event Withdrawal(address receiver, uint amount);
     event Transfer(address sender, address receiver, uint amount);
     event DisputeOpened(uint256 disputeNumber);
-    event VoteCast(uint256 disputeNumber);
+    event VoteCast(uint256 disputeNumber, address voter);
 
     struct Dispute {
         // the person opening the dispute
@@ -94,8 +94,7 @@ contract Arbitrator {
     // respond to dispute
     // to do: _counterSummary & _comp optional
     function respondToDispute(uint256 disputeNumber, uint256 _response, bytes32 _counterSummary, uint256 _comp)
-    payable public {
-        require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
+    public payable primaryParties(disputeNumber) {
         disputes[disputeNumber].response = _response;
         if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
             settleDispute(disputeNumber, _response);
@@ -110,8 +109,8 @@ contract Arbitrator {
     }
 
     // settle dispute
-    function settleDispute(uint256 disputeNumber, uint256 _response) public payable {
-        // to do: transfer funds
+    function settleDispute(uint256 disputeNumber, uint256 _response) public payable primaryParties(disputeNumber) {
+        // deposit & transfer funds
         deposit();
         transfer(disputes[disputeNumber].prosecutor, disputes[disputeNumber].amount);
         // no contest or guilty ruling
@@ -126,24 +125,26 @@ contract Arbitrator {
     }
 
     // counter dispute
-    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) public payable {
+    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) public payable primaryParties(disputeNumber) {
         // defense
         disputes[disputeNumber].defendantEvidence = _counterSummary;
         disputes[disputeNumber].amount = _comp;
         // were funds deposited?
         if (msg.value>0) {
             deposit();
+            // to do: logic if accepted, if not
         }
     }
 
     // deposit funds
+    // in eth (to do: make match with everything else)
     function deposit() public payable {
         emit Deposit(msg.sender, msg.value);
         balances[msg.sender] += msg.value;
     }
 
     // withdraw funds
-    // limited to int values
+    // in wei (limited to int values)
     function withdraw(uint256 weiAmount) public {
         require(balances[msg.sender] >= weiAmount, "Insufficient funds");
         // send funds to requester
@@ -154,7 +155,7 @@ contract Arbitrator {
     }
 
     // transfer funds
-    // limited to int values
+    // in wei (limited to int values)
     function transfer(address receiver, uint256 weiAmount) public {
         require(balances[msg.sender] >= weiAmount, "Insufficient funds");
         emit Transfer(msg.sender, receiver, weiAmount);
@@ -171,7 +172,7 @@ contract Arbitrator {
         if(!voteCast) {disputes[disputeNumber].nayCount++;}
         // address has voted, mark them as such
         disputes[disputeNumber].voters[msg.sender] = true;
-        emit VoteCast(disputeNumber);
+        emit VoteCast(disputeNumber, msg.sender);
     }
 
     // outputs current vote counts
@@ -184,4 +185,10 @@ contract Arbitrator {
     // function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
     //     return disputes[disputeNumber].voters[msg.sender];
     // }
+
+    // for functions that should only be called by prosecutor or defendant
+    modifier primaryParties(uint256 disputeNumber) {
+        require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
+        _;
+    }
 }
