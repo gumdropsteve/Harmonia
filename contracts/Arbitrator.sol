@@ -2,12 +2,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 // openDispute, vote, closeDispute, appealDispute, settleDispute, Deposit?
+import '@openzeppelin/contracts/utils/Address.sol';
 
 contract Arbitrator {
+    using Address for address payable;
     address payable private owner;
 
     uint256 yeeCount;
     uint256 nayCount;
+
+    mapping(address => uint) public balances;
+
+    event Deposit(address sender, uint amount);
+    event Withdrawal(address receiver, uint amount);
+    event Transfer(address sender, address receiver, uint amount);
+    event DisputeOpened(uint256 disputeNumber);
+    event VoteCast(uint256 disputeNumber);
 
     struct Dispute {
         // the person opening the dispute
@@ -77,13 +87,14 @@ contract Arbitrator {
         disputes.push(d);
         // output this dispute's number for reference
         disputeNumber = disputes.length - 1;
+        emit DisputeOpened(disputeNumber);
         return disputeNumber;
     }
 
     // respond to dispute
     // to do: _counterSummary & _comp optional
     function respondToDispute(uint256 disputeNumber, uint256 _response, bytes32 _counterSummary, uint256 _comp)
-    public {
+    payable public {
         require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
         disputes[disputeNumber].response = _response;
         if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
@@ -99,8 +110,10 @@ contract Arbitrator {
     }
 
     // settle dispute
-    function settleDispute(uint256 disputeNumber, uint256 _response) private {
+    function settleDispute(uint256 disputeNumber, uint256 _response) public payable {
         // to do: transfer funds
+        deposit();
+        transfer(disputes[disputeNumber].prosecutor, disputes[disputeNumber].amount);
         // no contest or guilty ruling
         if (_response==0) {
             disputes[disputeNumber].ruling = disputeRulings.NOCONTEST;
@@ -113,21 +126,52 @@ contract Arbitrator {
     }
 
     // counter dispute
-    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) private {
+    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) public payable {
         // defense
         disputes[disputeNumber].defendantEvidence = _counterSummary;
         disputes[disputeNumber].amount = _comp;
+        // were funds deposited?
+        if (msg.value>0) {
+            deposit();
+        }
+    }
+
+    // deposit funds
+    function deposit() public payable {
+        emit Deposit(msg.sender, msg.value);
+        balances[msg.sender] += msg.value;
+    }
+
+    // withdraw funds
+    // limited to int values
+    function withdraw(uint256 weiAmount) public {
+        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
+        // send funds to requester
+        msg.sender.sendValue(weiAmount);
+        // adjust balance & tag event
+        balances[msg.sender] -= weiAmount;
+        emit Withdrawal(msg.sender, weiAmount);
+    }
+
+    // transfer funds
+    // limited to int values
+    function transfer(address receiver, uint256 weiAmount) public {
+        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
+        emit Transfer(msg.sender, receiver, weiAmount);
+        balances[msg.sender] -= weiAmount;
+        balances[receiver] += weiAmount;
     }
 
     // vote yee 1 or nay 0
     function vote(uint256 disputeNumber, bool voteCast) public {
         require(disputes[disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
         require(!disputes[disputeNumber].voters[msg.sender], "already voted :)");
-        //if voting is live and address hasn't voted yet, count vote  
+        // if voting is live and address hasn't voted yet, count vote  
         if(voteCast) {disputes[disputeNumber].yeeCount++;}
         if(!voteCast) {disputes[disputeNumber].nayCount++;}
-        //address has voted, mark them as such
+        // address has voted, mark them as such
         disputes[disputeNumber].voters[msg.sender] = true;
+        emit VoteCast(disputeNumber);
     }
 
     // outputs current vote counts
