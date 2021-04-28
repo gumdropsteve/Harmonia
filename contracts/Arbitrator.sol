@@ -66,8 +66,8 @@ contract Arbitrator {
     function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 
     public returns(uint256 disputeNumber) {
         // set date info
-        uint256 today = 0;
-        uint256 deadline = today + 3;
+        uint256 today = block.timestamp;
+        uint256 deadline = today + 3 minutes;
         // create new dispute
         Dispute memory d;
         // set parties
@@ -167,6 +167,7 @@ contract Arbitrator {
     function vote(uint256 disputeNumber, bool voteCast) public {
         require(disputes[disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
         require(!disputes[disputeNumber].voters[msg.sender], "already voted :)");
+        require(block.timestamp < disputes[disputeNumber].voteDeadline, "voting deadline passed :)");
         // if voting is live and address hasn't voted yet, count vote  
         if(voteCast) {disputes[disputeNumber].yeeCount++;}
         if(!voteCast) {disputes[disputeNumber].nayCount++;}
