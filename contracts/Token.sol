@@ -55,4 +55,31 @@ contract Token is ERC20('Token', 'TKN'), Ownable {
         stakes[msg.sender] = stakes[msg.sender].sub(_stake);
         _mint(msg.sender, _stake);
     }
-}
+
+    /**
+    * @notice A method for a stakeholder to accrue rewards.
+    * @param _reward The amount of rewards accrued.
+    * @param _stakeholder The stakeholder receiving rewards.
+    */
+    function emitRewards(uint256 _reward, address _stakeholder) public {
+        rewards[_stakeholder] = rewards[_stakeholder].add(_reward);
+    }
+
+     /**
+    * @notice A method to retrieve the stake for a stakeholder.
+    * @param _stakeholder The stakeholder to retrieve the rewards for.
+    * @return uint256 The amount of wei in rewards.
+    */
+    function rewardOf(address _stakeholder) public view returns(uint256) {
+        return rewards[_stakeholder];
+    }
+
+    /**
+    * @notice A method for a stakeholder to withdraw rewards.
+    * @param _reward The amount of rewards to withdraw.
+    */
+    function withdrawRewards(uint256 _reward) public {
+        rewards[msg.sender] = rewards[msg.sender].sub(_reward);
+        _mint(msg.sender, _reward);
+    }
+} 

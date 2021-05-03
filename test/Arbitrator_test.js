@@ -29,12 +29,18 @@ contract('Arbitrator', accounts => {
                 var votes = await arbitrator.getVotes(0);
                 assert.equal(votes.yesVotes, 1);
                 assert.equal(votes.noVotes, 0);
+
+                // should have received a reward
+                assert.equal(await token.rewardOf(voter), 1);
             })
             it('votes changes vote to innocent', async () => {
                 await arbitrator.vote(0, false, {from: voter});
                 var votes = await arbitrator.getVotes(0);
                 assert.equal(votes.yesVotes, 0);
                 assert.equal(votes.noVotes, 1);
+
+                // should have received a reward
+                assert.equal(await token.rewardOf(voter), 1);
             })
         })
     })
