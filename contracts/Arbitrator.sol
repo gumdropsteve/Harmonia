@@ -194,7 +194,7 @@ contract Arbitrator {
         emit VoteCast(disputeNumber, msg.sender);
 
         // as an example, lets emit a single Token as a reward for voting
-        token.emitRewards(1, msg.sender);
+        token.assignRewards(1, msg.sender);
     }
 
     // outputs current vote counts

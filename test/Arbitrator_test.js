@@ -12,8 +12,12 @@ contract('Arbitrator', accounts => {
     const totalSupply = 1000000;
 
     beforeEach(async () => {
-        token = await Token.new(owner, totalSupply);
-        arbitrator = await Arbitrator.new(token.address)
+        token = await Token.new(owner, totalSupply);   
+        arbitrator = await Arbitrator.new(token.address);
+
+        // transfer token ownership to arbitrator so only it can emit rewards
+        token.transferOwnership(arbitrator.address, {from: owner});
+        
         await token.transfer(voter, 100, {from: owner})
         await token.createStake(10, {from: voter})
     })
