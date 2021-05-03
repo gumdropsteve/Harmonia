@@ -184,6 +184,7 @@ contract Arbitrator {
         require(disputes[disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
         require(!disputes[disputeNumber].voters[msg.sender], "already voted :)");
         require(block.timestamp < disputes[disputeNumber].voteDeadline, "voting deadline passed :)");
+        require(token.stakeOf(msg.sender) > 0, "must have some Token staked in order to vote");
         // if voting is live and address hasn't voted yet, count vote  
         if(voteCast) {disputes[disputeNumber].yeeCount = disputes[disputeNumber].yeeCount.add(1);}
         if(!voteCast) {disputes[disputeNumber].nayCount = disputes[disputeNumber].nayCount.add(1);}

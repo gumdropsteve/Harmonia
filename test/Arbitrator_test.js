@@ -14,6 +14,8 @@ contract('Arbitrator', accounts => {
     beforeEach(async () => {
         token = await Token.new(owner, totalSupply);
         arbitrator = await Arbitrator.new(token.address)
+        await token.transfer(voter, 100, {from: owner})
+        await token.createStake(10, {from: voter})
     })
 
     describe('Start a dispute', () => {
