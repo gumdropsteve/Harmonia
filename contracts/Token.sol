@@ -20,7 +20,6 @@ contract Token is ERC20('Token', 'TKN'), Ownable {
     */
     mapping(address => uint256) internal rewards;
 
-
     /**
     * @notice The constructor for the Staking Token.
     * @param _owner The address to receive all tokens on construction.

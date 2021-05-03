@@ -4,6 +4,7 @@ pragma solidity ^0.6.0;
 
 import '@openzeppelin/contracts/utils/Address.sol';
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./Token.sol";
 contract Arbitrator {
     using Address for address payable;
     using SafeMath for uint256;
@@ -70,9 +71,12 @@ contract Arbitrator {
     enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
 
-    constructor() public {
+    Token token;
+
+    constructor(Token _token) public {
         owner = msg.sender;
-        }
+        token = _token;
+    }
     
     // file a new dispute
     function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 

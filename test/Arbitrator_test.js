@@ -12,12 +12,12 @@ contract('Arbitrator', accounts => {
     const totalSupply = 1000000;
 
     beforeEach(async () => {
-        arbitrator = await Arbitrator.new({from: owner})
+        token = await Token.new(owner, totalSupply);
+        arbitrator = await Arbitrator.new(token.address)
     })
 
     describe('Start a dispute', () => {
         beforeEach(async () => {
-            arbitrator = await Arbitrator.new({from: owner})
             await arbitrator.openDispute(100,'0x111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFFCCCC',tenant, {from: landlord});
             await arbitrator.respondToDispute(0, 3, '0x111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFFCCCC', 0, {from: tenant})
         })
