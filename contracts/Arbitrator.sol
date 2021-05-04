@@ -3,9 +3,11 @@
 pragma solidity ^0.6.0;
 
 import '@openzeppelin/contracts/utils/Address.sol';
-
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./Token.sol";
 contract Arbitrator {
     using Address for address payable;
+    using SafeMath for uint256;
     address payable private owner;
 
     uint256 yeeCount;
@@ -55,12 +57,26 @@ contract Arbitrator {
     }
     Dispute[] public disputes;
 
+
+    /**
+    * @notice The plantiff associated to a given list of disputes.
+    */
+    mapping(address => uint256[]) plantiffs;
+
+    /**
+    * @notice The defendant associated to a given list of disputes.
+    */
+    mapping(address => uint256[]) defendants;
+
     enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
 
-    constructor() public {
+    Token token;
+
+    constructor(Token _token) public {
         owner = msg.sender;
-        }
+        token = _token;
+    }
     
     // file a new dispute
     function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 
@@ -86,7 +102,7 @@ contract Arbitrator {
         // add dispute to list of disputes
         disputes.push(d);
         // output this dispute's number for reference
-        disputeNumber = disputes.length - 1;
+        disputeNumber = disputes.length.sub(1);
         emit DisputeOpened(disputeNumber);
         return disputeNumber;
     }
@@ -140,7 +156,7 @@ contract Arbitrator {
     // in eth (to do: make match with everything else)
     function deposit() public payable {
         emit Deposit(msg.sender, msg.value);
-        balances[msg.sender] += msg.value;
+        balances[msg.sender] = balances[msg.sender].add(msg.value);
     }
 
     // withdraw funds
@@ -150,7 +166,7 @@ contract Arbitrator {
         // send funds to requester
         msg.sender.sendValue(weiAmount);
         // adjust balance & tag event
-        balances[msg.sender] -= weiAmount;
+        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
         emit Withdrawal(msg.sender, weiAmount);
     }
 
@@ -159,8 +175,8 @@ contract Arbitrator {
     function transfer(address receiver, uint256 weiAmount) public {
         require(balances[msg.sender] >= weiAmount, "Insufficient funds");
         emit Transfer(msg.sender, receiver, weiAmount);
-        balances[msg.sender] -= weiAmount;
-        balances[receiver] += weiAmount;
+        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
+        balances[receiver] =  balances[receiver].add(weiAmount);
     }
 
     // vote yee 1 or nay 0
@@ -168,12 +184,17 @@ contract Arbitrator {
         require(disputes[disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
         require(!disputes[disputeNumber].voters[msg.sender], "already voted :)");
         require(block.timestamp < disputes[disputeNumber].voteDeadline, "voting deadline passed :)");
+        require(token.stakeOf(msg.sender) > 0, "must have some Token staked in order to vote");
+
         // if voting is live and address hasn't voted yet, count vote  
-        if(voteCast) {disputes[disputeNumber].yeeCount++;}
-        if(!voteCast) {disputes[disputeNumber].nayCount++;}
+        if(voteCast) {disputes[disputeNumber].yeeCount = disputes[disputeNumber].yeeCount.add(1);}
+        if(!voteCast) {disputes[disputeNumber].nayCount = disputes[disputeNumber].nayCount.add(1);}
         // address has voted, mark them as such
         disputes[disputeNumber].voters[msg.sender] = true;
         emit VoteCast(disputeNumber, msg.sender);
+
+        // as an example, lets emit a single Token as a reward for voting
+        token.assignRewards(1, msg.sender);
     }
 
     // outputs current vote counts
