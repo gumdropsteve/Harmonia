@@ -3,6 +3,8 @@ require('dotenv').config()
 
 const key = process.env.PRIVATE_KEY
 const url = process.env.RPC_URL
+const skale_url = process.env.SKALE_CHAIN
+const skale_key = process.env.SKALE_PRIVATE_KEY
 
 module.exports = {
   networks: {
@@ -37,6 +39,14 @@ module.exports = {
       network_id: '4',
       skipDryRun: true
     },
+    skale: {
+      provider: () => {
+        return new HDWalletProvider(skale_key, skale_url)
+      },
+      gasPrice: 0,
+      network_id: '*',
+      skipDryRun: true
+    }
   },
   compilers: {
     solc: {
