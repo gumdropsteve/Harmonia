@@ -1,6 +1,6 @@
 // contracts/Arbitrator_Schain.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.6;
 
 import '@openzeppelin/contracts/utils/Address.sol';
 import "./utils/Context.sol";
@@ -199,7 +199,7 @@ contract Arbitrator_Schain is Context, MinterRole {
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+        require(account != address(0), "mint to the zero address");
 
         _beforeTokenTransfer(address(0), account, amount);
 
@@ -220,12 +220,12 @@ contract Arbitrator_Schain is Context, MinterRole {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
+        require(account != address(0), "burn from the zero address");
 
         _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = balances[account];
-        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        require(accountBalance >= amount, "burn amount exceeds balance");
         balances[account] = uint96(accountBalance - amount);
         totalSupply -= amount;
 
