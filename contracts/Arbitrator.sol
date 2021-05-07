@@ -18,9 +18,10 @@ contract Arbitrator {
     event Deposit(address sender, uint amount);
     event Withdrawal(address receiver, uint amount);
     event Transfer(address sender, address receiver, uint amount);
-    event DisputeOpened(uint256 disputeNumber);
-    event AgreementOferred(uint256 agreementNumber, address offeror);
-    event AgreementApproved(uint256 agreementNumber, address offeree);
+    event DisputeOpened(uint256 disputeNumber, address plantiff, address defendant);
+    event DisputeResponded(uint256 disputeNumber, uint status);
+    event AgreementOferred(uint256 agreementNumber, address offeror, address offeree);
+    event AgreementResponded(uint256 agreementNumber, address offeree, address offeree, uint status);
     event VoteCast(uint256 disputeNumber, address voter);
 
     struct Agreement {
@@ -77,9 +78,9 @@ contract Arbitrator {
     }
     Dispute[] public disputes;
 
-    enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
+    enum disputeStatus {PENDING, CLOSED, VOTING, COUNTER} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
-    enum agreementStatus {OPENED, CONSENTED, DECLINED, EXPIRED}
+    enum agreementStatus {OPENED, CONSENTED, DECLINED, EXPIRED, VOIDED}
 
     Token token;
 
@@ -88,30 +89,60 @@ contract Arbitrator {
         token = _token;
     }
 
-    function openAgreement(address offeree, uint amount, uint expireyDate, bytes32[] documents) public {
-        agreements.push(Agreement(msg.sender, offeree, amount, expireyDate, documents, agreementStatus.OPENED));
+    /**
+    * @notice A method where an offeror can open an agreement targeted at an offeree.
+    * @param _offeree The user being offered the agreement.
+    * @param _amount The deposit the offeree must provide.
+    * @param _expireyDate The date the agreement will expire.
+    * @param _documents ipfs file hashes of documents related to the agreement.
+    */
+    function openAgreement(address _offeree, uint _amount, uint _expireyDate, bytes32[] _documents) public return (uint agreementNumber) {
+        agreements.push(Agreement(msg.sender, _offeree, _amount, _expireyDate, _documents, agreementStatus.OPENED));
+        agreementNumber = agreements.length.sub(1);
+        emit AgreementOferred(agreementNumber, msg.sender, _offeree);
+        return agreementNumber;
     }
 
-    function respondToAgreement(uint256 agreementNumber, uint status) public payable{
-        agreement = agreements[agreementNumber];
+    /**
+    * @notice A method where an offeree can respond to an agreement and deposit the appropriate funds
+    * @param _agreementNumber the agreement.
+    * @param _status The status the agreement will be updated to.
+    */
+    function respondToAgreement(uint256 _agreementNumber, uint _status) public payable {
+        agreement = agreements[_agreementNumber];
+        require(agreement.offeree == msg.sender);
         require(agreement.amount < msg.value);
-        if(status == agreementStatus.CONSENTED) {
-            agreements[agreementNumber].status = agreementStatus.CONSENTED;
+        if(_status == agreementStatus.CONSENTED) {
+            agreements[_agreementNumber].status = agreementStatus.CONSENTED;
             deposit();
         } else {
-            agreements[agreementNumber].status = agreementStatus.DECLINED;
+            agreements[_agreementNumber].status = agreementStatus.DECLINED;
         }
+        emit AgreementResponded(_agreementNumber, agreement.offeror, agreement.offeree, _status);
     }
 
+    /**
+    * @notice Ends an agreement, can only be done once expireyDate has passed.
+    * @param _agreementNumber the agreement.
+    */
     function endAgreement(uint256 agreementNumber) {
         require(agreement.expireyDate < block.timestamp);
         agreements[agreementNumber].status = agreementStatus.EXPIRED;
     }
     
-    // file a new dispute
-    function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 
-    public returns(uint256 disputeNumber) {
-        // set date info
+    /**
+    * @notice open a dispute for an associated agreement.
+    * @param _agreementNumber the agreement.
+    * @param _compensationRequested compensation requested.
+    * @param _disputeSummary ipfs file hashes of documents related to the plantiffs dispute.
+    */
+    function openDispute(uint256 _agreementNumber, uint256 _compensationRequested, bytes32 _disputeSummary) public returns(uint256 disputeNumber) {
+        agreement = agreements[_agreementNumber];
+        require(agreement.offeree == msg.sender || agreement.offeror == msg.sender);
+        require(agreement.amount >= _compensationRequested);
+        // msg.sender is always the plantiff
+        // if msg sender is the offeror defendant is offeree, else defendant is offeror
+        _defendant = agreement.offeror == msg.sender ? agreement.offeree : agreement.offeror;
         uint256 today = block.timestamp;
         uint256 deadline = today + 3 minutes;
         // create new dispute
@@ -129,84 +160,51 @@ contract Arbitrator {
         d.nayCount = 0;
         d.openDate = today;
         d.voteDeadline = deadline;
+        d.agreement = _agreementNumber;
         // add dispute to list of disputes
         disputes.push(d);
         // output this dispute's number for reference
         disputeNumber = disputes.length.sub(1);
-        emit DisputeOpened(disputeNumber);
+        emit DisputeOpened(disputeNumber, dispute.plantiff, dispute.defendant);
         return disputeNumber;
     }
 
-    // respond to dispute
-    // to do: _counterSummary & _comp optional
-    function respondToDispute(uint256 disputeNumber, uint256 _response, bytes32 _counterSummary, uint256 _comp)
-    public payable primaryParties(disputeNumber) {
-        disputes[disputeNumber].response = _response;
-        if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
-            settleDispute(disputeNumber, _response);
-        }
-        else if (_response==2) { // plea: counter
-            counterDispute(disputeNumber, _counterSummary, _comp);
-        }
-        // start vote
-        else { // plea: innocent / otherwise
-            disputes[disputeNumber].status = disputeStatus.VOTING;
-        }
+     /**
+    * @notice allows the defendant to decline a dispute settlement. this will go to a public vote.
+    * @param _disputeNumber the dispute.
+    * @param _counterSummary ipfs file hashes of documents related to the defendants evidence.
+    */
+    function declineDispute(uint256 _disputeNumber, bytes32 _defenseSummary) public {
+        require(disputes[_disputeNumber].defendant == msg.sender);
+        disputes[_disputeNumber].defendantEvidence = _defenseSummary;
+        disputes[_disputeNumber].status = disputeStatus.VOTING;
+        emit DisputeResponded(_disputeNumber, disputeStatus.VOTING);
     }
 
-    // settle dispute
-    function settleDispute(uint256 disputeNumber, uint256 _response) public payable primaryParties(disputeNumber) {
-        // deposit & transfer funds
-        deposit();
+    /**
+    * @notice allows the defendant to counte a dispute settlement and offer a different compensation amount
+    * @param _disputeNumber the dispute.
+    * @param _counterSummary ipfs file hashes of documents related to the defendants evidence.
+    */
+    function counterDispute(uint256 _disputeNumber, bytes32 _counterSummary, uint256 _compensationCounter) public {
+        require(disputes[_disputeNumber].defendant == msg.sender);
+        disputes[_disputeNumber].defendantEvidence = _counterSummary;
+        disputes[_disputeNumber].amount = _compensationCounter;
+        disputes[_disputeNumber].status = disputeStatus.COUNTER;
+        emit DisputeResponded(_disputeNumber, disputeStatus.COUNTER);
+    }
+
+    /**
+    * @notice allows the defendant to settle the dispute for the dispute amount. trasnfers funds to plantiff, closes the dispute and voids the original agreement.
+    * @param _disputeNumber the dispute.
+    * @param _counterSummary ipfs file hashes of documents related to the defendants evidence.
+    */
+    function settleDispute(uint256 disputeNumber) public {
+        require(disputes[disputeNumber].defendant == msg.sender);
+        disputes[disputeNumber].status = disputeStatus.CLOSED;    
+        agreements[disputes[disputeNumber].agreement].status = agreementStatus.VOIDED;
         transfer(disputes[disputeNumber].plantiff, disputes[disputeNumber].amount);
-        // no contest or guilty ruling
-        if (_response==0) {
-            disputes[disputeNumber].ruling = disputeRulings.NOCONTEST;
-        }
-        else {
-            disputes[disputeNumber].ruling = disputeRulings.GUILTY;
-        }
-        // close dispute
-        disputes[disputeNumber].status = disputeStatus.CLOSED;
-    }
-
-    // counter dispute
-    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) public payable primaryParties(disputeNumber) {
-        // defense
-        disputes[disputeNumber].defendantEvidence = _counterSummary;
-        disputes[disputeNumber].amount = _comp;
-        // were funds deposited?
-        if (msg.value>0) {
-            deposit();
-            // to do: logic if accepted, if not
-        }
-    }
-
-    // deposit funds
-    // in eth (to do: make match with everything else)
-    function deposit() public payable {
-        emit Deposit(msg.sender, msg.value);
-        balances[msg.sender] = balances[msg.sender].add(msg.value);
-    }
-
-    // withdraw funds
-    // in wei (limited to int values)
-    function withdraw(uint256 weiAmount) public {
-        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
-        // send funds to requester
-        msg.sender.sendValue(weiAmount);
-        // adjust balance & tag event
-        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
-        emit Withdrawal(msg.sender, weiAmount);
-    }
-
-    // transfer funds
-    // in wei (limited to int values)
-    function transfer(address receiver, uint256 weiAmount) public {
-        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
-        emit Transfer(msg.sender, receiver, weiAmount);
-        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
-        balances[receiver] =  balances[receiver].add(weiAmount);
+        emit DisputeResponded(_disputeNumber, disputeStatus.CLOSED);
     }
 
     // vote yee 1 or nay 0
@@ -247,7 +245,36 @@ contract Arbitrator {
             emit Transfer(dispute.defendant, dispute.prosecutor, dispute.amount);
             balances[dispute.defendant] = balances[dispute.defendant].sub(dispute.amount);
             balances[dispute.prosecutor] = balances[dispute.prosecutor].add(dispute.amount);         
+            // void agreement
+            agreements[disputes[disputeNumber].agreement].status = agreementStatus.VOIDED;      
         }
+    }
+
+     // deposit funds
+    // in eth (to do: make match with everything else)
+    function deposit() public payable {
+        emit Deposit(msg.sender, msg.value);
+        balances[msg.sender] = balances[msg.sender].add(msg.value);
+    }
+
+    // withdraw funds
+    // in wei (limited to int values)
+    function withdraw(uint256 weiAmount) public {
+        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
+        // send funds to requester
+        msg.sender.sendValue(weiAmount);
+        // adjust balance & tag event
+        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
+        emit Withdrawal(msg.sender, weiAmount);
+    }
+
+    // transfer funds
+    // in wei (limited to int values)
+    function transfer(address receiver, uint256 weiAmount) public {
+        require(balances[msg.sender] >= weiAmount, "Insufficient funds");
+        emit Transfer(msg.sender, receiver, weiAmount);
+        balances[msg.sender] = balances[msg.sender].sub(weiAmount);
+        balances[receiver] =  balances[receiver].add(weiAmount);
     }
 
 
