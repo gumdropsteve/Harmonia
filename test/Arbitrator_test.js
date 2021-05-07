@@ -45,7 +45,7 @@ contract('Arbitrator', accounts => {
 
                 // should have received a reward
                 assert.equal(await token.rewardOf(voter), 1);
-            })
+            });
         })
     })
 

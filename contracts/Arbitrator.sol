@@ -19,19 +19,37 @@ contract Arbitrator {
     event Withdrawal(address receiver, uint amount);
     event Transfer(address sender, address receiver, uint amount);
     event DisputeOpened(uint256 disputeNumber);
+    event AgreementOferred(uint256 agreementNumber, address offeror);
+    event AgreementApproved(uint256 agreementNumber, address offeree);
     event VoteCast(uint256 disputeNumber, address voter);
+
+    struct Agreement {
+        // the person providing the offer
+        address offeror;
+        // the person the offer is made for
+        address offeree;
+        // deposit amount
+        uint amount;
+        // agreement expirey date
+        uint expireyDate;
+        // file hashes of files pertaining to the agreement
+        bytes32[] documents;
+        // the agreement status
+        agreementStatus status;
+    }
+    Agreement[] public agreements;
 
     struct Dispute {
         // the person opening the dispute
-        address prosecutor;
+        address plantiff;
         // the defendant of the dispute
         address defendant;
-        // the amount in $$ that the prosecutor is requesting in damages
+        // the amount in $$ that the plantiff is requesting in damages
         uint256 amount;
         // response to dispute
         uint256 response;
-        // file hash (stored on ipfs) on prosecutor evidence related to the case
-        bytes32 prosecutorEvidence;
+        // file hash (stored on ipfs) on plantiff evidence related to the case
+        bytes32 plantiffEvidence;
         // file hash (stored on ipfs) on defendant evidence related to the case
         bytes32 defendantEvidence;
         // status of the current dispute
@@ -54,28 +72,40 @@ contract Arbitrator {
         uint256 voteDeadline;
         // date dispute was closed
         uint256 closeDate;
+        // the original agreement
+        uint256 agreement;
     }
     Dispute[] public disputes;
 
-
-    /**
-    * @notice The plantiff associated to a given list of disputes.
-    */
-    mapping(address => uint256[]) plantiffs;
-
-    /**
-    * @notice The defendant associated to a given list of disputes.
-    */
-    mapping(address => uint256[]) defendants;
-
     enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
+    enum agreementStatus {OPENED, CONSENTED, DECLINED, EXPIRED}
 
     Token token;
 
     constructor(Token _token) public {
         owner = msg.sender;
         token = _token;
+    }
+
+    function openAgreement(address offeree, uint amount, uint expireyDate, bytes32[] documents) public {
+        agreements.push(Agreement(msg.sender, offeree, amount, expireyDate, documents, agreementStatus.OPENED));
+    }
+
+    function respondToAgreement(uint256 agreementNumber, uint status) public payable{
+        agreement = agreements[agreementNumber];
+        require(agreement.amount < msg.value);
+        if(status == agreementStatus.CONSENTED) {
+            agreements[agreementNumber].status = agreementStatus.CONSENTED;
+            deposit();
+        } else {
+            agreements[agreementNumber].status = agreementStatus.DECLINED;
+        }
+    }
+
+    function endAgreement(uint256 agreementNumber) {
+        require(agreement.expireyDate < block.timestamp);
+        agreements[agreementNumber].status = agreementStatus.EXPIRED;
     }
     
     // file a new dispute
@@ -87,11 +117,11 @@ contract Arbitrator {
         // create new dispute
         Dispute memory d;
         // set parties
-        d.prosecutor = msg.sender;
+        d.plantiff = msg.sender;
         d.defendant = _defendant;
-        // add prosecutor's information
+        // add plantiff's information
         d.amount = _compensationRequested;
-        d.prosecutorEvidence = _disputeSummary;
+        d.plantiff = _disputeSummary;
         // set status and voting details
         d.status = disputeStatus.PENDING;
         d.ruling = disputeRulings.PENDING;
@@ -128,7 +158,7 @@ contract Arbitrator {
     function settleDispute(uint256 disputeNumber, uint256 _response) public payable primaryParties(disputeNumber) {
         // deposit & transfer funds
         deposit();
-        transfer(disputes[disputeNumber].prosecutor, disputes[disputeNumber].amount);
+        transfer(disputes[disputeNumber].plantiff, disputes[disputeNumber].amount);
         // no contest or guilty ruling
         if (_response==0) {
             disputes[disputeNumber].ruling = disputeRulings.NOCONTEST;
@@ -202,15 +232,35 @@ contract Arbitrator {
         return(disputes[disputeNumber].yeeCount, disputes[disputeNumber].nayCount);
     }
 
+    /**
+    * @notice A method to complete the voting process. Only the plantiff should be able to complete the voting process.
+    * @param disputeNumber The dispute number.
+    */
+    function votingComplete(uint256 disputeNumber) {
+        dispute = disputes[disputeNumber];
+        // require(dispute.deadline < block.timestamp);
+        require(dispute.status == Status.VOTING);
+        require(dispute.plantiff == msg.sender);
+        disputes[disputeNumber].status = disputeStatus.CLOSED;
+        // simple majority vote
+        if(dispute.yeeCount > dispute.nayCount) {    
+            emit Transfer(dispute.defendant, dispute.prosecutor, dispute.amount);
+            balances[dispute.defendant] = balances[dispute.defendant].sub(dispute.amount);
+            balances[dispute.prosecutor] = balances[dispute.prosecutor].add(dispute.amount);         
+        }
+    }
+
+
     // // lets user know if their vote has been counted
     // // status: WIP
     // function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
     //     return disputes[disputeNumber].voters[msg.sender];
     // }
 
-    // for functions that should only be called by prosecutor or defendant
+    // for functions that should only be called by plantiff or defendant
     modifier primaryParties(uint256 disputeNumber) {
-        require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
+        require((msg.sender == disputes[disputeNumber].plantiff) || (msg.sender == disputes[disputeNumber].defendant));
         _;
     }
-}
+
+   
