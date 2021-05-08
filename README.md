@@ -40,3 +40,14 @@ All of this info is related to your wallet. Here's a 4 minute video for setting 
 
 #### SKALE
 - SKALE info: https://skale.network/docs/developers/ethglobal
+
+## Tech Used
+#### NuCypher
+Cryptographic Infrastructure for Privacy-Preserving Applications
+- [GitHub](https://github.com/nucypher/)
+- [Website](https://www.nucypher.com/)
+
+#### SKALE
+Decentralized modular environment for Solidity dApps
+- [GitHub](https://github.com/skalenetwork/)
+- [Website](https://skale.network/)
