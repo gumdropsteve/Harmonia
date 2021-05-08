@@ -1,6 +1,8 @@
 # Decentralized Autonomous Resolutions
+Peer to peer dispute resolution.
 
 ## Description
+A contract for dispute resolution.
 
 ### Demo
 #### Live Demo
@@ -8,9 +10,10 @@
 #### Video
 
 ### Architecture diagram
-![Architecture diagram]()
+![Architecture diagram](https://lh4.googleusercontent.com/M8OWVzvmJ9M3JkjGV8M9--Q_rBbKLtfumY_Bu60E8c4htm9tv05X-U_yt8pX_hbIPBdSzxQ0yafCsagEe1Od5Y4zlaiH3bCGaAG3Kc-m5QmexNpTPjK01ZjfbpDG673b-UadvqXh)
 
 ## Getting Started
+#### On SKALE
 ```
 git clone https://github.com/gumdropsteve/dispute-resolution
 
@@ -20,9 +23,7 @@ npm install
 
 truffle compile
 
-truffle migrate --reset --network rinkeby -f 3
-
-truffle run verify Rental --network rinkeby --license MIT
+truffle migrate --reset --network skale -f 2
 ```
 
 ### Using the Testnets
@@ -37,5 +38,5 @@ TLDR: building on blockchain for free.
 
 All of this info is related to your wallet. Here's a 4 minute video for setting up your wallet if you don't already have one: https://youtu.be/P7FX_1PePX0
 
-#### Ethereum (Rinkeby)
-- ETH faucet: https://faucet.rinkeby.io
+#### SKALE
+- SKALE info: https://skale.network/docs/developers/ethglobal
