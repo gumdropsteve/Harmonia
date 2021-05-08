@@ -222,14 +222,12 @@ contract Arbitrator {
         require(!disputes[_disputeNumber].voters[msg.sender], "already voted :)");
         require(block.timestamp < disputes[_disputeNumber].voteDeadline, "voting deadline passed :)");
         require(token.stakeOf(msg.sender) > 0, "must have some Token staked in order to vote");
-
         // if voting is live and address hasn't voted yet, count vote  
         if(voteCast) {disputes[_disputeNumber].yeeCount = disputes[_disputeNumber].yeeCount.add(1);}
         if(!voteCast) {disputes[_disputeNumber].nayCount = disputes[_disputeNumber].nayCount.add(1);}
         // address has voted, mark them as such
         disputes[_disputeNumber].voters[msg.sender] = true;
         emit VoteCast(_disputeNumber, msg.sender);
-
         // as an example, lets emit a single Token as a reward for voting
         token.assignRewards(1, msg.sender);
     }
@@ -289,7 +287,6 @@ contract Arbitrator {
         balances[msg.sender] = balances[msg.sender].sub(weiAmount);
         balances[receiver] =  balances[receiver].add(weiAmount);
     }
-
 
     // // lets user know if their vote has been counted
     // // status: WIP
