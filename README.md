@@ -10,10 +10,10 @@ A contract for dispute resolution.
 #### Video
 
 ### Architecture diagram
-![Architecture diagram](https://lh4.googleusercontent.com/M8OWVzvmJ9M3JkjGV8M9--Q_rBbKLtfumY_Bu60E8c4htm9tv05X-U_yt8pX_hbIPBdSzxQ0yafCsagEe1Od5Y4zlaiH3bCGaAG3Kc-m5QmexNpTPjK01ZjfbpDG673b-UadvqXh)
+![Architecture diagram](https://lh6.googleusercontent.com/hhJNb3d6yjgxGsyO_2HoI6AyCVFCIg29gV8Vv3GBFNG--kS_O19Qrl_5-cs7fnaK75R9u8HquF8Hhj0ZptUxGvLSNMQuLwlzXQF6xFu62WtdEV0OQtTcSFnx0Kd5pwuARYnsSe1h)
 
 ## Getting Started
-#### On SKALE
+### On SKALE
 ```
 git clone https://github.com/gumdropsteve/dispute-resolution
 
@@ -26,20 +26,11 @@ truffle compile
 truffle migrate --reset --network skale -f 2
 ```
 
-### Using the Testnets
-#### What is a testnet?
-TLDR: building on blockchain for free.
-> Since Ethereum is a protocol, this means there can be multiple independent "[networks](https://ethereum.org/en/developers/docs/networks)" conforming to this protocol that do not interact with each other.
-> 
-> Mainnet is the primary public Ethereum production blockchain, where actual-value transactions occur on the distributed ledger.
-> When people and exchanges discuss ETH prices, they're talking about mainnet ETH.
-> 
->  In addition to mainnet, there are public [testnets](https://ethereum.org/en/developers/docs/networks/#testnets). These are networks used by protocol developers or smart contract developers to test both protocol upgrades as well as potential smart contracts in a production-like environment before deployment to mainnet. Think of this as an analog to production versus staging servers. - [Ethereum docs](https://ethereum.org/en/developers/docs/networks/)
-
-All of this info is related to your wallet. Here's a 4 minute video for setting up your wallet if you don't already have one: https://youtu.be/P7FX_1PePX0
-
-#### SKALE
-- SKALE info: https://skale.network/docs/developers/ethglobal
+#### Adding SKALE to Metamask
+https://skale.network/docs/developers/wallets/getting-started#metamask
+1. Add a Custom RPC Network
+2. Network URL: https://eth-global-0.skalenodes.com:10456
+3. Chain ID: 0xb9454a5c40f66
 
 ## Tech Used
 <img align="right" width="150" height="150" src="https://lh6.googleusercontent.com/3WDXeY6cvDfW5-P6rmqtun9dRYYCtQa_c4MFqjNssE2CE4h2t8VfG5iHMADLNaX-Mq8kS7hQeEe99DV7lA-1tpCbtxirq6MFuMiJJQoSJU3vrCpNCuzLzbWWby2Ug7qAn9jfeVKt">
