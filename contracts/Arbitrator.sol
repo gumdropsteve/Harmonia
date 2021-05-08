@@ -5,6 +5,7 @@ pragma solidity ^0.6.0;
 import '@openzeppelin/contracts/utils/Address.sol';
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Token.sol";
+
 contract Arbitrator {
     using Address for address payable;
     using SafeMath for uint256;
@@ -293,10 +294,4 @@ contract Arbitrator {
     // function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
     //     return disputes[disputeNumber].voters[msg.sender];
     // }
-
-    // for functions that should only be called by plantiff or defendant
-    modifier primaryParties(uint256 disputeNumber) {
-        require((msg.sender == disputes[disputeNumber].plantiff) || (msg.sender == disputes[disputeNumber].defendant));
-        _;
-    }
 }
