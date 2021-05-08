@@ -34,7 +34,7 @@ TLDR: building on blockchain for free.
 > Mainnet is the primary public Ethereum production blockchain, where actual-value transactions occur on the distributed ledger.
 > When people and exchanges discuss ETH prices, they're talking about mainnet ETH.
 > 
->  In addition to mainnet, there are public [testnets](https://ethereum.org/en/developers/docs/networks/#testnets). These are networks used by protocol developers or smart contract developers to test both protocol upgrades as well as potential smart contracts in a production-like environment before deployment to mainnet. Think of this as an analog to production versus staging servers. - [Etherium docs](https://ethereum.org/en/developers/docs/networks/)
+>  In addition to mainnet, there are public [testnets](https://ethereum.org/en/developers/docs/networks/#testnets). These are networks used by protocol developers or smart contract developers to test both protocol upgrades as well as potential smart contracts in a production-like environment before deployment to mainnet. Think of this as an analog to production versus staging servers. - [Ethereum docs](https://ethereum.org/en/developers/docs/networks/)
 
 All of this info is related to your wallet. Here's a 4 minute video for setting up your wallet if you don't already have one: https://youtu.be/P7FX_1PePX0
 
@@ -42,10 +42,14 @@ All of this info is related to your wallet. Here's a 4 minute video for setting 
 - SKALE info: https://skale.network/docs/developers/ethglobal
 
 ## Tech Used
+<img align="right" width="150" height="150" src="https://lh6.googleusercontent.com/3WDXeY6cvDfW5-P6rmqtun9dRYYCtQa_c4MFqjNssE2CE4h2t8VfG5iHMADLNaX-Mq8kS7hQeEe99DV7lA-1tpCbtxirq6MFuMiJJQoSJU3vrCpNCuzLzbWWby2Ug7qAn9jfeVKt">
+
 #### NuCypher
 Cryptographic Infrastructure for Privacy-Preserving Applications
 - [GitHub](https://github.com/nucypher/)
 - [Website](https://www.nucypher.com/)
+
+<img align="right" width="150" height="150" src="https://lh3.googleusercontent.com/YSzrZ4MAb3oDhGDo1d0yZ-ET8Bhb5b6RUbKJGXqKPMSFNEt8kKtqDQmyc7TZn6uQJllHQlU6VQxdt3uw2EW_RQEG6dU5py3d3VGcCtOY2U79rbHq5u4rpGFh8lBbnQQzDp7iLO34">
 
 #### SKALE
 Decentralized modular environment for Solidity dApps
