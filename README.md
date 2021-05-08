@@ -32,6 +32,14 @@ https://skale.network/docs/developers/wallets/getting-started#metamask
 2. Network URL: https://eth-global-0.skalenodes.com:10456
 3. Chain ID: 0xb9454a5c40f66
 
+### Unit tests
+To run the unit testing scripts
+```
+truffle test ./test/Arbitrator_test.js
+
+truffle test ./test/Token_test.js
+```
+
 ## Tech Used
 <img align="right" width="150" height="150" src="https://lh6.googleusercontent.com/3WDXeY6cvDfW5-P6rmqtun9dRYYCtQa_c4MFqjNssE2CE4h2t8VfG5iHMADLNaX-Mq8kS7hQeEe99DV7lA-1tpCbtxirq6MFuMiJJQoSJU3vrCpNCuzLzbWWby2Ug7qAn9jfeVKt">
 
