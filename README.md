@@ -4,13 +4,16 @@ Peer to peer dispute resolution.
 ## Description
 A contract for dispute resolution.
 
+#### Trust Issue
+Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influncing outcomes.
+
 ### Demo
 #### Live Demo
 
 #### Video
 
 ### Architecture diagram
-![Architecture diagram](https://lh6.googleusercontent.com/hhJNb3d6yjgxGsyO_2HoI6AyCVFCIg29gV8Vv3GBFNG--kS_O19Qrl_5-cs7fnaK75R9u8HquF8Hhj0ZptUxGvLSNMQuLwlzXQF6xFu62WtdEV0OQtTcSFnx0Kd5pwuARYnsSe1h)
+![Architecture diagram](https://lh5.googleusercontent.com/tlU469mcXo9YM3XvwThlGU5GB8fIdXe-jSwqN0WJScORjkI6wAnCPiNU5NaIUQEb0gZkW0FEhCK6yCQ-VXiPqznxHIhy-pRhxCq9Z1n-wT2MaB6bjlgGTcvVLkJFe7u5IMRlsFwy)
 
 ## Getting Started
 ### On SKALE
@@ -47,6 +50,7 @@ truffle test ./test/Token_test.js
 Cryptographic Infrastructure for Privacy-Preserving Applications
 - [GitHub](https://github.com/nucypher/)
 - [Website](https://www.nucypher.com/)
+- We used NuCypher to help keep votes private while the voting period is live so that voters are not influenced by other voters
 
 <img align="right" width="150" height="150" src="https://lh3.googleusercontent.com/YSzrZ4MAb3oDhGDo1d0yZ-ET8Bhb5b6RUbKJGXqKPMSFNEt8kKtqDQmyc7TZn6uQJllHQlU6VQxdt3uw2EW_RQEG6dU5py3d3VGcCtOY2U79rbHq5u4rpGFh8lBbnQQzDp7iLO34">
 
@@ -54,3 +58,8 @@ Cryptographic Infrastructure for Privacy-Preserving Applications
 Decentralized modular environment for Solidity dApps
 - [GitHub](https://github.com/skalenetwork/)
 - [Website](https://skale.network/)
+- We used SKALE to eliminate gas fees and reduce costs
+
+
+## Future Direction
+This dispute resolution contract was origionally thought of as part of a decentralized real estate rental service, making AirBnb like disputes between guests and hosts more transparent and honest.
