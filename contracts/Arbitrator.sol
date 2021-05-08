@@ -18,20 +18,39 @@ contract Arbitrator {
     event Deposit(address sender, uint amount);
     event Withdrawal(address receiver, uint amount);
     event Transfer(address sender, address receiver, uint amount);
-    event DisputeOpened(uint256 disputeNumber);
+    event DisputeOpened(uint256 disputeNumber, address plantiff, address defendant);
+    event DisputeResponded(uint256 disputeNumber, disputeStatus status);
+    event AgreementOfferred(uint256 agreementNumber, address offeror, address offeree);
+    event AgreementResponded(uint256 agreementNumber, address offeror, address offeree, agreementStatus status);
     event VoteCast(uint256 disputeNumber, address voter);
+
+    struct Agreement {
+        // the person providing the offer
+        address offeror;
+        // the person the offer is made for
+        address offeree;
+        // deposit amount
+        uint amount;
+        // agreement expirey date
+        uint expireyDate;
+        // file hashes of files pertaining to the agreement
+        bytes32[] documents;
+        // the agreement status
+        agreementStatus status;
+    }
+    Agreement[] public agreements;
 
     struct Dispute {
         // the person opening the dispute
-        address prosecutor;
+        address plantiff;
         // the defendant of the dispute
         address defendant;
-        // the amount in $$ that the prosecutor is requesting in damages
+        // the amount in $$ that the plantiff is requesting in damages
         uint256 amount;
         // response to dispute
         uint256 response;
-        // file hash (stored on ipfs) on prosecutor evidence related to the case
-        bytes32 prosecutorEvidence;
+        // file hash (stored on ipfs) on plantiff evidence related to the case
+        bytes32 plantiffEvidence;
         // file hash (stored on ipfs) on defendant evidence related to the case
         bytes32 defendantEvidence;
         // status of the current dispute
@@ -54,22 +73,14 @@ contract Arbitrator {
         uint256 voteDeadline;
         // date dispute was closed
         uint256 closeDate;
+        // the original agreement
+        uint256 agreement;
     }
     Dispute[] public disputes;
 
-
-    /**
-    * @notice The plantiff associated to a given list of disputes.
-    */
-    mapping(address => uint256[]) plantiffs;
-
-    /**
-    * @notice The defendant associated to a given list of disputes.
-    */
-    mapping(address => uint256[]) defendants;
-
-    enum disputeStatus {PENDING, CLOSED, VOTING} // to do: APPEAL
+    enum disputeStatus {PENDING, CLOSED, VOTING, COUNTER} // to do: APPEAL
     enum disputeRulings {PENDING, NOCONTEST, GUILTY, INNOCENT}
+    enum agreementStatus {OPENED, CONSENTED, DECLINED, EXPIRED, VOIDED}
 
     Token token;
 
@@ -77,82 +88,180 @@ contract Arbitrator {
         owner = msg.sender;
         token = _token;
     }
+
+    /**
+    * @notice A method where an offeror can open an agreement targeted at an offeree.
+    * @param _offeree The user being offered the agreement.
+    * @param _amount The deposit the offeree must provide.
+    * @param _expireyDate The date the agreement will expire.
+    * @param _documents ipfs file hashes of documents related to the agreement.
+    */
+    function openAgreement(address _offeree, uint _amount, uint _expireyDate, bytes32[] memory _documents) public returns(uint agreementNumber) {
+        Agreement memory agreement;
+        agreement.offeror = msg.sender;
+        agreement.offeree = _offeree;
+        agreement.amount = _amount;
+        agreement.expireyDate = _expireyDate;
+        agreement.documents = _documents;
+        agreements.push(agreement);
+        agreementNumber = agreements.length.sub(1);
+        emit AgreementOfferred(agreementNumber, msg.sender, _offeree);
+        return agreementNumber;
+    }
+
+    /**
+    * @notice A method where an offeree can respond to an agreement and deposit the appropriate funds
+    * @param _agreementNumber the agreement.
+    * @param _status The status the agreement will be updated to.
+    */
+    function respondToAgreement(uint256 _agreementNumber, agreementStatus _status) public payable {
+        Agreement memory agreement = agreements[_agreementNumber];
+        require(agreement.offeree == msg.sender, 'Must be the offeree to respond');
+        if(_status == agreementStatus.CONSENTED) {
+            require(agreement.amount <= msg.value, 'must provide agreement amount');
+            agreements[_agreementNumber].status = agreementStatus.CONSENTED;
+            deposit();
+        } else {
+            agreements[_agreementNumber].status = agreementStatus.DECLINED;
+        }
+        emit AgreementResponded(_agreementNumber, agreement.offeror, agreement.offeree, _status);
+    }
+
+    /**
+    * @notice Ends an agreement, can only be done once expireyDate has passed.
+    * @param _agreementNumber the agreement.
+    */
+    function endAgreement(uint256 _agreementNumber) public {
+        require(agreements[_agreementNumber].expireyDate < block.timestamp);
+        agreements[_agreementNumber].status = agreementStatus.EXPIRED;
+    }
     
-    // file a new dispute
-    function openDispute(uint256 _compensationRequested, bytes32 _disputeSummary, address _defendant) 
-    public returns(uint256 disputeNumber) {
-        // set date info
+    /**
+    * @notice open a dispute for an associated agreement.
+    * @param _agreementNumber the agreement.
+    * @param _compensationRequested compensation requested.
+    * @param _disputeSummary ipfs file hashes of documents related to the plantiffs dispute.
+    */
+    function openDispute(uint256 _agreementNumber, uint256 _compensationRequested, bytes32 _disputeSummary) public returns(uint256 disputeNumber) {
+        Agreement memory agreement = agreements[_agreementNumber];
+        require(agreement.offeree == msg.sender || agreement.offeror == msg.sender);
+        require(agreement.amount >= _compensationRequested);
+        // msg.sender is always the plantiff
+        // if msg sender is the offeror defendant is offeree, else defendant is offeror
+        address _defendant = agreement.offeror == msg.sender ? agreement.offeree : agreement.offeror;
         uint256 today = block.timestamp;
         uint256 deadline = today + 3 minutes;
         // create new dispute
-        Dispute memory d;
+        Dispute memory dispute;
         // set parties
-        d.prosecutor = msg.sender;
-        d.defendant = _defendant;
-        // add prosecutor's information
-        d.amount = _compensationRequested;
-        d.prosecutorEvidence = _disputeSummary;
+        dispute.plantiff = msg.sender;
+        dispute.defendant = _defendant;
+        // add plantiff's information
+        dispute.amount = _compensationRequested;
+        dispute.plantiffEvidence = _disputeSummary;
         // set status and voting details
-        d.status = disputeStatus.PENDING;
-        d.ruling = disputeRulings.PENDING;
-        d.yeeCount = 0;
-        d.nayCount = 0;
-        d.openDate = today;
-        d.voteDeadline = deadline;
+        dispute.status = disputeStatus.PENDING;
+        dispute.ruling = disputeRulings.PENDING;
+        dispute.yeeCount = 0;
+        dispute.nayCount = 0;
+        dispute.openDate = today;
+        dispute.voteDeadline = deadline;
+        dispute.agreement = _agreementNumber;
         // add dispute to list of disputes
-        disputes.push(d);
+        disputes.push(dispute);
         // output this dispute's number for reference
         disputeNumber = disputes.length.sub(1);
-        emit DisputeOpened(disputeNumber);
+        emit DisputeOpened(disputeNumber, dispute.plantiff, dispute.defendant);
         return disputeNumber;
     }
 
-    // respond to dispute
-    // to do: _counterSummary & _comp optional
-    function respondToDispute(uint256 disputeNumber, uint256 _response, bytes32 _counterSummary, uint256 _comp)
-    public payable primaryParties(disputeNumber) {
-        disputes[disputeNumber].response = _response;
-        if (_response==0 || _response==1) { // plea: 0 = no contest, 1 = guilty
-            settleDispute(disputeNumber, _response);
-        }
-        else if (_response==2) { // plea: counter
-            counterDispute(disputeNumber, _counterSummary, _comp);
-        }
-        // start vote
-        else { // plea: innocent / otherwise
-            disputes[disputeNumber].status = disputeStatus.VOTING;
-        }
+     /**
+    * @notice allows the defendant to decline a dispute settlement. this will go to a public vote.
+    * @param _disputeNumber the dispute.
+    * @param _defenseSummary ipfs file hashes of documents related to the defendants evidence.
+    */
+    function declineDispute(uint256 _disputeNumber, bytes32 _defenseSummary) public {
+        require(disputes[_disputeNumber].defendant == msg.sender);
+        disputes[_disputeNumber].defendantEvidence = _defenseSummary;
+        disputes[_disputeNumber].status = disputeStatus.VOTING;
+        emit DisputeResponded(_disputeNumber, disputeStatus.VOTING);
     }
 
-    // settle dispute
-    function settleDispute(uint256 disputeNumber, uint256 _response) public payable primaryParties(disputeNumber) {
-        // deposit & transfer funds
-        deposit();
-        transfer(disputes[disputeNumber].prosecutor, disputes[disputeNumber].amount);
-        // no contest or guilty ruling
-        if (_response==0) {
-            disputes[disputeNumber].ruling = disputeRulings.NOCONTEST;
-        }
-        else {
-            disputes[disputeNumber].ruling = disputeRulings.GUILTY;
-        }
-        // close dispute
-        disputes[disputeNumber].status = disputeStatus.CLOSED;
+    /**
+    * @notice allows the defendant to counte a dispute settlement and offer a different compensation amount
+    * @param _disputeNumber the dispute.
+    * @param _counterSummary ipfs file hashes of documents related to the defendants evidence.
+    */
+    function counterDispute(uint256 _disputeNumber, bytes32 _counterSummary, uint256 _compensationCounter) public {
+        require(disputes[_disputeNumber].defendant == msg.sender);
+        disputes[_disputeNumber].defendantEvidence = _counterSummary;
+        disputes[_disputeNumber].amount = _compensationCounter;
+        disputes[_disputeNumber].status = disputeStatus.COUNTER;
+        emit DisputeResponded(_disputeNumber, disputeStatus.COUNTER);
     }
 
-    // counter dispute
-    function counterDispute(uint256 disputeNumber, bytes32 _counterSummary, uint256 _comp) public payable primaryParties(disputeNumber) {
-        // defense
-        disputes[disputeNumber].defendantEvidence = _counterSummary;
-        disputes[disputeNumber].amount = _comp;
-        // were funds deposited?
-        if (msg.value>0) {
-            deposit();
-            // to do: logic if accepted, if not
-        }
+    /**
+    * @notice allows the defendant to settle the dispute for the dispute amount. trasnfers funds to plantiff, closes the dispute and voids the original agreement.
+    * @param _disputeNumber the dispute.
+    */
+    function settleDispute(uint256 _disputeNumber) public {
+        require(disputes[_disputeNumber].defendant == msg.sender);
+        disputes[_disputeNumber].status = disputeStatus.CLOSED;    
+        agreements[disputes[_disputeNumber].agreement].status = agreementStatus.VOIDED;
+        transfer(disputes[_disputeNumber].plantiff, disputes[_disputeNumber].amount);
+        emit DisputeResponded(_disputeNumber, disputeStatus.CLOSED);
     }
 
-    // deposit funds
+     /**
+    * @notice allows a user to vote on a dispute. user must have some tokens staked in order to vote
+    * @param _disputeNumber the dispute.
+    * @param voteCast true for yee, false for nay.
+    */
+    function vote(uint256 _disputeNumber, bool voteCast) public {
+        require(disputes[_disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
+        require(!disputes[_disputeNumber].voters[msg.sender], "already voted :)");
+        require(block.timestamp < disputes[_disputeNumber].voteDeadline, "voting deadline passed :)");
+        require(token.stakeOf(msg.sender) > 0, "must have some Token staked in order to vote");
+        // if voting is live and address hasn't voted yet, count vote  
+        if(voteCast) {disputes[_disputeNumber].yeeCount = disputes[_disputeNumber].yeeCount.add(1);}
+        if(!voteCast) {disputes[_disputeNumber].nayCount = disputes[_disputeNumber].nayCount.add(1);}
+        // address has voted, mark them as such
+        disputes[_disputeNumber].voters[msg.sender] = true;
+        emit VoteCast(_disputeNumber, msg.sender);
+        // as an example, lets emit a single Token as a reward for voting
+        token.assignRewards(1, msg.sender);
+    }
+
+    /**
+    * @notice allows current vote count for a given dispute
+    * @param _disputeNumber the dispute.
+    */
+    function getVotes(uint256 _disputeNumber) public view returns (uint yees, uint nays) {
+        return(disputes[_disputeNumber].yeeCount, disputes[_disputeNumber].nayCount);
+    }
+
+    /**
+    * @notice A method to complete the voting process. Only the plantiff should be able to complete the voting process.
+    * @param _disputeNumber The dispute number.
+    */
+    function votingComplete(uint256 _disputeNumber) public {
+        Dispute memory dispute = disputes[_disputeNumber];
+        // require(dispute.deadline < block.timestamp);
+        require(dispute.status == disputeStatus.VOTING);
+        require(dispute.plantiff == msg.sender);
+        disputes[_disputeNumber].status = disputeStatus.CLOSED;
+        // simple majority vote
+        if(dispute.yeeCount > dispute.nayCount) {    
+            emit Transfer(dispute.defendant, dispute.plantiff, dispute.amount);
+            balances[dispute.defendant] = balances[dispute.defendant].sub(dispute.amount);
+            balances[dispute.plantiff] = balances[dispute.plantiff].add(dispute.amount);         
+            // void agreement
+            agreements[disputes[_disputeNumber].agreement].status = agreementStatus.VOIDED;      
+        }
+         emit DisputeResponded(_disputeNumber, disputeStatus.CLOSED);
+    }
+
+     // deposit funds
     // in eth (to do: make match with everything else)
     function deposit() public payable {
         emit Deposit(msg.sender, msg.value);
@@ -179,38 +288,15 @@ contract Arbitrator {
         balances[receiver] =  balances[receiver].add(weiAmount);
     }
 
-    // vote yee 1 or nay 0
-    function vote(uint256 disputeNumber, bool voteCast) public {
-        require(disputes[disputeNumber].status==disputeStatus.VOTING, "voting not live :)");
-        require(!disputes[disputeNumber].voters[msg.sender], "already voted :)");
-        require(block.timestamp < disputes[disputeNumber].voteDeadline, "voting deadline passed :)");
-        require(token.stakeOf(msg.sender) > 0, "must have some Token staked in order to vote");
-
-        // if voting is live and address hasn't voted yet, count vote  
-        if(voteCast) {disputes[disputeNumber].yeeCount = disputes[disputeNumber].yeeCount.add(1);}
-        if(!voteCast) {disputes[disputeNumber].nayCount = disputes[disputeNumber].nayCount.add(1);}
-        // address has voted, mark them as such
-        disputes[disputeNumber].voters[msg.sender] = true;
-        emit VoteCast(disputeNumber, msg.sender);
-
-        // as an example, lets emit a single Token as a reward for voting
-        token.assignRewards(1, msg.sender);
-    }
-
-    // outputs current vote counts
-    function getVotes(uint256 disputeNumber) public view returns (uint yesVotes, uint noVotes) {
-        return(disputes[disputeNumber].yeeCount, disputes[disputeNumber].nayCount);
-    }
-
     // // lets user know if their vote has been counted
     // // status: WIP
     // function haveYouVoted(uint256 disputeNumber) public view returns (bool) {
     //     return disputes[disputeNumber].voters[msg.sender];
     // }
 
-    // for functions that should only be called by prosecutor or defendant
+    // for functions that should only be called by plantiff or defendant
     modifier primaryParties(uint256 disputeNumber) {
-        require((msg.sender == disputes[disputeNumber].prosecutor) || (msg.sender == disputes[disputeNumber].defendant));
+        require((msg.sender == disputes[disputeNumber].plantiff) || (msg.sender == disputes[disputeNumber].defendant));
         _;
     }
 }
