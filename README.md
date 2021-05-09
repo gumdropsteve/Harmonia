@@ -17,7 +17,7 @@ Disputes are resolved in an honest and fair way without 3rd party (corporate) in
 ### What it Does
 By decentralizing disputes to one's peers, Harmonia ensures an open and fair dispute resolution.
 
-The `Arbitrator.sol` contract is the capstone of DAR and sets up a platform where offers can be proposed and processed through completion. What makes it cool is the dispute resolution process.
+The `Arbitrator.sol` contract is the capstone and sets up a platform where offers can be proposed and processed through completion. What makes it cool is the dispute resolution process.
 
 Disputes are initially hoped to be worked out between the 2 parties involved (e.g. renter & landlord); but if they are not, they are opened up to be voted on by trusted dispute resolutionists.
 
