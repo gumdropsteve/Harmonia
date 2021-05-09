@@ -7,12 +7,16 @@ Harmonia is a platform for cost effective, scalable, decentralized dispute resol
 ### Motivation
 Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
 
-From a business perspective, the cost of losing a random non-host user (someone who does not list any rooms) is probably less than the cost of losing a random host user (someone who does list a room(s)). This can be derived by compairing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
+From a business perspective, the cost of losing a random non-host user is probably less than the cost of losing a random host user. This can be derived by comparing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
 
-So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host by default would be a wise business decision. Even though it is not necessarily right.
+On the other hand, what if the dispute is between a new host and a loyal non-host user? The tables may turn.
+
+So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host -- or whichever side generates better revenue for the company -- by default would be a wise business decision. Even though it is not necessarily right.
+
+This simple example is just one of the numerous environments where 3rd party interest can unfairly alter how disagreements are settled.
 
 #### Trust Issue being Addressed - What do I think I have?
-Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influncing outcomes.
+Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influencing outcomes.
 
 ### What it Does
 By decentralizing disputes to one's peers, Harmonia ensures an open and fair dispute resolution.
@@ -21,7 +25,7 @@ The `Arbitrator.sol` contract is the capstone and sets up a platform where offer
 
 Disputes are initially hoped to be worked out between the 2 parties involved (e.g. renter & landlord); but if they are not, they are opened up to be voted on by trusted dispute resolutionists.
 
-In order to be a dispute resolutionists, users stake (lock up $) `Token`. To discourage dishonest participation, these dispute resolutionists risk both their reputation and their stake ($) when voting. Dispute resolutionists are rewarded for good participation with `Token`.
+In order to be a dispute resolutionists, users stake (lock up $ in) `HAR`, a fungible token. Resolutionists risk both their reputation and their stake when voting, and can be penalized for dishonest participation. For honest participation, resolutionists are rewarded with `HAR`.
 
 #### Moving disputes to a blockchain means the votes are public.
 So if I am a dispute resolutionist looking to avoid "dishonest participation", why not just look and vote the same as everybody else voted?
@@ -50,8 +54,8 @@ Because they are not rewarded based on future earnings, and their voting records
     
 **They can't work it out - Peers vote**
 
-5. Voters have staked `Token`, enabling them to vote on disputes, and are rewarded with `Token` for voting.
-    - `Token` is an [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) fungible token.
+5. Voters have staked `HAR`, enabling them to vote on disputes, and are rewarded with `HAR` for voting.
+    - `HAR` is an [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) fungible token.
     - All votes are FHE [encrypted](https://nodejs.org/api/crypto.html#crypto_crypto_hkdf_digest_key_salt_info_keylen_callback) through NuCypher.
         - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened.
         - This private key is made public once the voting period has ended.
@@ -133,4 +137,4 @@ We used SKALE to eliminate gas fees, reduce costs, and accelerate transaction sp
 
 
 ## Future Direction
-This dispute resolution contract was origionally thought of as part of a decentralized real estate rental service, making AirBnb like disputes between guests and hosts more transparent and honest.
+This dispute resolution contract was originally thought of as part of a decentralized real estate rental service, making AirBnb like disputes between guests and hosts more transparent and honest.
