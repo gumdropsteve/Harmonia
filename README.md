@@ -9,11 +9,9 @@ Every time I have heard about an AirBnb dispute from a guest, it was the worst t
 
 From a business perspective, the cost of losing a random non-host user is probably less than the cost of losing a random host user. This can be derived by comparing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
 
-On the other hand, what if the dispute is between a new host and a loyal non-host user? The tables may turn.
-
 So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host -- or whichever side generates better revenue for the company -- by default would be a wise business decision. Even though it is not necessarily right.
 
-This simple example is just one of the numerous environments where 3rd party interest can unfairly alter how disagreements are settled.
+This simple example is just one of the numerous environments where 3rd party bias can unfairly alter how disagreements are settled.
 
 #### Trust Issue being Addressed - What do I think I have?
 Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influencing outcomes.
@@ -137,4 +135,7 @@ We used SKALE to eliminate gas fees, reduce costs, and accelerate transaction sp
 
 
 ## Future Direction
+- Add SKALE IMA support
+- Improve voter sourcing
+
 This dispute resolution contract was originally thought of as part of a decentralized real estate rental service, making AirBnb like disputes between guests and hosts more transparent and honest.
