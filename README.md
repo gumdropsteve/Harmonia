@@ -1,142 +1,136 @@
-# Chainlink Truffle Box
+# Harmonia
+Help your peers agree.
 
-<br/>
-<p align="center">
-<a href="https://chain.link" target="_blank">
-<img src="https://raw.githubusercontent.com/smartcontractkit/box/master/box-img-lg.png" width="225" alt="Chainlink Truffle logo">
-</a>
-</p>
-<br/>
+## Description
+Harmonia is a platform for cost effective, scalable, decentralized dispute resolution through NuCypher time encrypted voting, IPFS file storage, and the SKALE blockchain network. Harmonia is peer to peer dispute resolution.
 
-## Requirements
+### Motivation
+Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
 
-- NPM
+From a business perspective, the cost of losing a random non-host user is probably less than the cost of losing a random host user. This can be derived by comparing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
 
-## Installation
+So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host -- or whichever side generates better revenue for the company -- by default would be a wise business decision. Even though it is not necessarily right.
 
-1. Install truffle
+This simple example is just one of the numerous environments where 3rd party bias can unfairly alter how disagreements are settled.
 
-```bash
-npm install truffle -g
+#### Trust Issue being Addressed - What do I think I have?
+Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influencing outcomes.
+
+### What it Does
+By decentralizing disputes to one's peers, Harmonia ensures an open and fair dispute resolution.
+
+The `Arbitrator.sol` contract is the capstone and sets up a platform where offers can be proposed and processed through completion. What makes it cool is the dispute resolution process.
+
+Disputes are initially hoped to be worked out between the 2 parties involved (e.g. renter & landlord); but if they are not, they are opened up to be voted on by trusted dispute resolutionists.
+
+In order to be a dispute resolutionists, users stake (lock up $ in) `HAR`, a fungible token. Resolutionists risk both their reputation and their stake when voting, and can be penalized for dishonest participation. For honest participation, resolutionists are rewarded with `HAR`.
+
+#### Moving disputes to a blockchain means the votes are public.
+So if I am a dispute resolutionist looking to avoid "dishonest participation", why not just look and vote the same as everybody else voted?
+
+Well, to make sure dispute resolutionists are not influenced to vote a certain way based on how other dispute resolutionists vote, all votes are encrypted until the voting period has ended. At that time the private key is made public by being published on chain, so anyone can verify the results.
+
+The goal of this is to make sure dispute resolutionists take time to review the contents of a dispute, and actually assess the situation, before voting.
+
+Because they are not rewarded based on future earnings, and their voting records are public, dispute resolutionists are not motivated to vote with any intention other than "doing the right thing".
+
+### How it Works
+**Agreement is made - Offer accepted**
+
+1. A `offeror` [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L92-L110) an offer _Agreement_ (e.g. a rental contract stored on IPFS) to a `offeree`.
+2. The `offeree` accepts said _Offer_, and the _Agreement_ is set.
+
+**Something goes wrong - Dispute opened**
+
+3. One of the parties (`offeror` or `offeree`) feels something went wrong, and would like to be compensated accordingly.
+    - That party [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L139-L176) a _Dispute_ and becomes the _Dispute_'s `plantiff`.
+    - The other party, now the _Dispute_'s `defendant`, is notified.
+4. The `defendant` has a few options: 1. Settle 2. Counter 3. Decline.
+    - Settle: payment is transferred from the `defendant`'s deposit to the `plaintiff` and the _Dispute_ is over
+    - Counter: a counter offer is submitted, and the `plaintiff` can either settle or decline
+    - Decline: a voting period is opened so the _Dispute_ can be settled by vote
+    
+**They can't work it out - Peers vote**
+
+5. Voters have staked `HAR`, enabling them to vote on disputes, and are rewarded with `HAR` for voting.
+    - `HAR` is an [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) fungible token.
+    - All votes are FHE [encrypted](https://nodejs.org/api/crypto.html#crypto_crypto_hkdf_digest_key_salt_info_keylen_callback) through NuCypher.
+        - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened.
+        - This private key is made public once the voting period has ended.
+    - Voters are rewarded for "good behavior" and punished for "bad behavior".
+        - Example: Alice rented Lee's apartment for a week and brought her dogs even though the agreement clearly stated "no pets allowed". Evidence includes videos from Ring of Alice walking in and out of the apartment with her 2 German Shepherds numerous times over the course of the week, including overnight stays.
+        - Example "good behavior": voting Alice is in the wrong
+        - Example "bad behavior"s: voting that Lee is in the wrong; manipulating the system to assist Alice or Lee
+
+**Voting ends - Open resolution reached**
+
+6. The voting period ends, the `plaintiff` and `defendant` decrypt and count the votes, and the private key is made public on chain.
+7. Once the votes have been tallied and verified by the `plaintiff` and `defendant`, payment (if applicable) is transferred from one party to the other.
+    - If the 2 parties disagree on the vote's results, that is something worth knowing.
+
+### Architecture diagram
+![Architecture diagram](https://lh6.googleusercontent.com/cxdySU5sqAjYgaeh4c2xwz2E3LEObmPuNeC-SjIsV6nuXpMxHKBzyxJ9sT8qPvQwF0sraY_ocBwWs2LS7XhXnu-0BH6BisiKXjFuotg6psLBhzEBP1tUML69xLENj2B1lF-guVTq)
+
+## Getting Started
+### On SKALE
 ```
+git clone https://github.com/gumdropsteve/Harmonia
 
-2. Setup repo
+cd dispute-resolution
 
-```bash
-mkdir MyChainlinkProject
-cd MyChainlinkProject/
-```
-
-3. Unbox
-
-```bash
-truffle unbox smartcontractkit/box
-```
-
-4. Install dependencies by running:
-
-```bash
 npm install
 
-# OR...
+truffle compile
 
-yarn install
+truffle migrate --reset --network skale -f 2
 ```
 
-## Test
+#### Adding SKALE to Metamask
+https://skale.network/docs/developers/wallets/getting-started#metamask
+1. Add a Custom RPC Network
+2. Network URL: https://eth-global-0.skalenodes.com:10456
+3. Chain ID: 0xb9454a5c40f66
 
-```bash
-npm test
+### Unit tests
+To run the unit testing scripts
+```
+truffle test ./test/Arbitrator_test.js
+
+truffle test ./test/Token_test.js
 ```
 
-## Deploy
+## Tech Used
 
-For deploying to the kovan network, Truffle will use `truffle-hdwallet-provider` for your mnemonic and an RPC URL. Set your environment variables `$RPC_URL` and `$MNEMONIC` before running:
+<img align="right" width="150" height="150" src="https://lh5.googleusercontent.com/P2Fm4GklnCVSPuNnM2eLncdSahp0_pd7LzYJcK6tb-YIT0pdI6v9aElATV71ZGmdKhDsztXa0cW5pRCfmu0rempM5nXoBonM33DfCaUsJKCOQKBKKnwI2VJUqfT0IcJCobd_yreA">
 
-```bash
-npm run migrate:kovan
-```
+#### IPFS
+> A peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open.
+- [GitHub](https://github.com/ipfs/ipfs)
+- [Website](https://ipfs.io/)
 
-You can also run:
+We used IPFS to store _Agreement.documents_, _Dispute.plantiffEvidence_ and _Dispute.defendantEvidence_ files.
 
-```bash
-truffle migrate --network kovan --reset
-```
-If you want to use truffle commands.
+<img align="right" width="150" height="150" src="https://lh6.googleusercontent.com/3WDXeY6cvDfW5-P6rmqtun9dRYYCtQa_c4MFqjNssE2CE4h2t8VfG5iHMADLNaX-Mq8kS7hQeEe99DV7lA-1tpCbtxirq6MFuMiJJQoSJU3vrCpNCuzLzbWWby2Ug7qAn9jfeVKt">
 
-### Local Blockchain
+#### NuCypher
+> A decentralized threshold cryptography network offering interfaces and runtimes for secrets management and dynamic access control.
+- [GitHub](https://github.com/nucypher/)
+- [Website](https://www.nucypher.com/)
 
-> :warning: Without a Chainlink node deployed locally, requests from smart contracts will not be responded to. We recommend you deploy to the Kovan network
+We used NuCypher to help keep votes private while the voting period is live so that voters are not influenced by other voters, while allowing `plaintiff`s and `defendant`s to decrypt votes to see results.
 
-If needed, edit the `truffle-config.js` config file to set the desired network to a different port. It assumes any network is running the RPC port on 8545.
+<img align="right" width="150" height="150" src="https://lh3.googleusercontent.com/YSzrZ4MAb3oDhGDo1d0yZ-ET8Bhb5b6RUbKJGXqKPMSFNEt8kKtqDQmyc7TZn6uQJllHQlU6VQxdt3uw2EW_RQEG6dU5py3d3VGcCtOY2U79rbHq5u4rpGFh8lBbnQQzDp7iLO34">
 
-```bash
-npm run migrate:dev
-```
+#### SKALE
+> Decentralized modular environment for Solidity dApps. Elastic Network for Ethereum Scaling.
+- [GitHub](https://github.com/skalenetwork/)
+- [Website](https://skale.network/)
 
-## Helper Scripts
+We used SKALE to eliminate gas fees, reduce costs, and accelerate transaction speeds.
 
-There are 3 helper scripts provided with this box in the scripts directory:
 
-- `fund-contract.js`
-- `request-data.js`
-- `read-contract.js`
+## Future Direction
+- Add SKALE IMA support
+- Improve voter sourcing
 
-In addition, for working with Chainlink Price Feeds and ChainlinkVRF there are folders respectively. 
-
-They can be used by calling them from `npx truffle exec`, for example:
-
-```bash
-npx truffle exec scripts/fund-contract.js --network kovan
-```
-
-The CLI will output something similar to the following:
-
-```
-Using network 'kovan'.
-
-Funding contract: 0x972DB80842Fdaf6015d80954949dBE0A1700705E
-0xd81fcf7bfaf8660149041c823e843f0b2409137a1809a0319d26db9ceaeef650
-Truffle v5.0.25 (core: 5.0.25)
-Node v10.16.3
-```
-
-In the `request-data.js` script, example parameters are provided for you. You can change the oracle address, Job ID, and parameters based on the information available on [our documentation](https://docs.chain.link/docs/testnet-oracles).
-
-```bash
-npx truffle exec scripts/request-data.js --network kovan
-```
-
-This creates a request and will return the transaction ID, for example:
-
-```
-Using network 'kovan'.
-
-Creating request on contract: 0x972DB80842Fdaf6015d80954949dBE0A1700705E
-0x828f256109f22087b0804a4d1a5c25e8ce9e5ac4bbc777b5715f5f9e5b181a4b
-Truffle v5.0.25 (core: 5.0.25)
-Node v10.16.3
-```
-
-After creating a request on a kovan network, you will want to wait 3 blocks for the Chainlink node to respond. Then call the `read-contract.js` script to read the contract's state.
-
-```bash
-npx truffle exec scripts/read-contract.js --network kovan
-```
-
-Once the oracle has responded, you will receive a value similar to the one below:
-
-```
-Using network 'kovan'.
-
-21568
-Truffle v5.0.25 (core: 5.0.25)
-Node v10.16.3
-```
-
-## TODO
-
-- Add tests for ChainlinkVRF
-- Add tests for Chainlink Price Feeds
-- Refactor tests to use this instead of defining contracts with let
-- Use the Chainlink-published mocks for [MockV3Aggregator](https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/tests/MockV3Aggregator.sol) and [VRFCoordinatorMock](https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/tests/VRFCoordinatorMock.sol)
+This dispute resolution contract was originally thought of as part of a decentralized real estate rental service, making AirBnb like disputes between guests and hosts more transparent and honest.
