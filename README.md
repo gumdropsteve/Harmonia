@@ -1,20 +1,21 @@
-# Decentralized Autonomous Resolutions
-Peer to peer dispute resolution.
+# Harmonia
+Help your peers agree.
 
 ## Description
+Harmonia is a platform for cost effective, scalable, decentralized dispute resolution through NuCypher time encrypted voting, IPFS file storage, and the SKALE blockchain network. Harmonia is peer to peer dispute resolution.
 
 ### Motivation
 Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
 
 From a business perspective, the cost of losing a random non-host user (someone who does not list any rooms) is most likely more than the cost of losing a random host user (someone who does list a room(s)). This can be derived by compairing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
 
-So if the situation is not clear, or for any less innocent reason that justifies it, siding with the host by default would be a wise business decision. Even though it is not necessarily right.
+So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host by default would be a wise business decision. Even though it is not necessarily right.
 
 #### Trust Issue being Addressed - What do I think I have?
 Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influncing outcomes.
 
 ### What it Does
-By decentralizing disputes to one's peers, Decentralized Autonomous Resolutions (DAR) ensures an open and fair dispute resolution.
+By decentralizing disputes to one's peers, Harmonia ensures an open and fair dispute resolution.
 
 The `Arbitrator.sol` contract is the capstone of DAR and sets up a platform where offers can be proposed and processed through completion. What makes it cool is the dispute resolution process.
 
@@ -29,7 +30,7 @@ Well, to make sure dispute resolutionists are not influenced to vote a certain w
 
 The goal of this is to make sure dispute resolutionists take time to review the contents of a dispute, and actually assess the situation, before voting.
 
-Because they are not rewarded based on future earnings, and their voting record is public, dispute resolutionists are not motivated to vote with any intention other than "doing the right thing".
+Because they are not rewarded based on future earnings, and their voting records are public, dispute resolutionists are not motivated to vote with any intention other than "doing the right thing".
 
 ### How it Works
 **Agreement is made - Offer accepted**
@@ -54,10 +55,10 @@ Because they are not rewarded based on future earnings, and their voting record 
     - All votes are FHE [encrypted](https://nodejs.org/api/crypto.html#crypto_crypto_hkdf_digest_key_salt_info_keylen_callback) through NuCypher
         - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened
         - This private key is made public once the voting period has ended
-    - Voters are rewarded for "good behavior" and disincentivized from "bad behavior"
+    - Voters are rewarded for "good behavior" and punished for "bad behavior"
         - Example: Alice rented Lee's apartment for a week and brought her dogs even though the agreement clearly stated "no pets allowed". Evidence includes videos from Ring of Alice walking in and out of the apartment with her 2 German Shepherds numerous times over the course of the week, including overnight stays.
         - Example "good behavior": voting Alice is in the wrong
-        - Example "bad behavior": voting that Lee is in the wrong; manipulating the system to assist Alice or Lee
+        - Example "bad behavior"s: voting that Lee is in the wrong; manipulating the system to assist Alice or Lee
 6. The voting period ends, the `plaintiff` and `defendant` decrypt and count the votes, and the private key is made public on chain
 7. Once the votes have been tallied and verified by the `plaintiff` and `defendant`, payment (if applicable) is transferred from one party to the other
     - If the 2 parties disagree on the vote's results, that is something worth knowing
