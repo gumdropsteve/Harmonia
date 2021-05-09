@@ -35,33 +35,36 @@ Because they are not rewarded based on future earnings, and their voting records
 ### How it Works
 **Agreement is made - Offer accepted**
 
-1. A `offeror` [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L92-L110) an offer _Agreement_ (e.g. a rental contract stored on IPFS) to a `offeree`
-2. The `offeree` accepts said _Offer_, and the _Agreement_ is set
+1. A `offeror` [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L92-L110) an offer _Agreement_ (e.g. a rental contract stored on IPFS) to a `offeree`.
+2. The `offeree` accepts said _Offer_, and the _Agreement_ is set.
 
 **Something goes wrong - Dispute opened**
 
-3. One of the parties (`offeror` or `offeree`) feels something went wrong, and would like to be compensated accordingly
-    - That party [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L139-L176) a _Dispute_ and becomes the _Dispute_'s `plantiff`
-    - The other party, now the _Dispute_'s `defendant`, is notified
-4. The `defendant` has a few options: 1. Settle 2. Counter 3. Decline 
+3. One of the parties (`offeror` or `offeree`) feels something went wrong, and would like to be compensated accordingly.
+    - That party [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L139-L176) a _Dispute_ and becomes the _Dispute_'s `plantiff`.
+    - The other party, now the _Dispute_'s `defendant`, is notified.
+4. The `defendant` has a few options: 1. Settle 2. Counter 3. Decline.
     - Settle: payment is transferred from the `defendant`'s deposit to the `plaintiff` and the _Dispute_ is over
     - Counter: a counter offer is submitted, and the `plaintiff` can either settle or decline
     - Decline: a voting period is opened so the _Dispute_ can be settled by vote
     
 **They can't work it out - Peers vote**
 
-5. Voters have staked `Token`, enabling them to vote on disputes, and are rewarded with `Token` for voting
-    - `Token` is an [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) fungible token
-    - All votes are FHE [encrypted](https://nodejs.org/api/crypto.html#crypto_crypto_hkdf_digest_key_salt_info_keylen_callback) through NuCypher
-        - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened
-        - This private key is made public once the voting period has ended
-    - Voters are rewarded for "good behavior" and punished for "bad behavior"
+5. Voters have staked `Token`, enabling them to vote on disputes, and are rewarded with `Token` for voting.
+    - `Token` is an [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) fungible token.
+    - All votes are FHE [encrypted](https://nodejs.org/api/crypto.html#crypto_crypto_hkdf_digest_key_salt_info_keylen_callback) through NuCypher.
+        - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened.
+        - This private key is made public once the voting period has ended.
+    - Voters are rewarded for "good behavior" and punished for "bad behavior".
         - Example: Alice rented Lee's apartment for a week and brought her dogs even though the agreement clearly stated "no pets allowed". Evidence includes videos from Ring of Alice walking in and out of the apartment with her 2 German Shepherds numerous times over the course of the week, including overnight stays.
         - Example "good behavior": voting Alice is in the wrong
         - Example "bad behavior"s: voting that Lee is in the wrong; manipulating the system to assist Alice or Lee
-6. The voting period ends, the `plaintiff` and `defendant` decrypt and count the votes, and the private key is made public on chain
-7. Once the votes have been tallied and verified by the `plaintiff` and `defendant`, payment (if applicable) is transferred from one party to the other
-    - If the 2 parties disagree on the vote's results, that is something worth knowing
+
+**Voting ends - Open resolution reached**
+
+6. The voting period ends, the `plaintiff` and `defendant` decrypt and count the votes, and the private key is made public on chain.
+7. Once the votes have been tallied and verified by the `plaintiff` and `defendant`, payment (if applicable) is transferred from one party to the other.
+    - If the 2 parties disagree on the vote's results, that is something worth knowing.
 
 ### Demo
 #### Live Demo
@@ -74,7 +77,7 @@ Because they are not rewarded based on future earnings, and their voting records
 ## Getting Started
 ### On SKALE
 ```
-git clone https://github.com/gumdropsteve/dispute-resolution
+git clone https://github.com/gumdropsteve/Harmonia
 
 cd dispute-resolution
 
