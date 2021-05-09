@@ -68,11 +68,6 @@ Because they are not rewarded based on future earnings, and their voting records
 7. Once the votes have been tallied and verified by the `plaintiff` and `defendant`, payment (if applicable) is transferred from one party to the other.
     - If the 2 parties disagree on the vote's results, that is something worth knowing.
 
-### Demo
-#### Live Demo
-
-#### Video
-
 ### Architecture diagram
 ![Architecture diagram](https://lh6.googleusercontent.com/cxdySU5sqAjYgaeh4c2xwz2E3LEObmPuNeC-SjIsV6nuXpMxHKBzyxJ9sT8qPvQwF0sraY_ocBwWs2LS7XhXnu-0BH6BisiKXjFuotg6psLBhzEBP1tUML69xLENj2B1lF-guVTq)
 
