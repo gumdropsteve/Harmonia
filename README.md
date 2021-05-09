@@ -7,7 +7,7 @@ Harmonia is a platform for cost effective, scalable, decentralized dispute resol
 ### Motivation
 Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
 
-From a business perspective, the cost of losing a random non-host user (someone who does not list any rooms) is most likely more than the cost of losing a random host user (someone who does list a room(s)). This can be derived by compairing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
+From a business perspective, the cost of losing a random non-host user (someone who does not list any rooms) is probably less than the cost of losing a random host user (someone who does list a room(s)). This can be derived by compairing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
 
 So if the blame is not clear, or for any less innocent reason that justifies it, siding with the host by default would be a wise business decision. Even though it is not necessarily right.
 
