@@ -1,16 +1,14 @@
 pragma solidity ^0.6.0;
 
-
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-
 // Note that it's ownable and the owner wields tremendous power. The ownership
 // should be transferred to a governance smart contract once Nerve.
-contract Token is ERC20('Token', 'TKN'), Ownable {
+contract Token is ERC20('Token', 'HAR'), Ownable {
    using SafeMath for uint256;
 
     /**
