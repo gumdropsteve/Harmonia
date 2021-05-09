@@ -2,10 +2,34 @@
 Peer to peer dispute resolution.
 
 ## Description
-A contract for dispute resolution.
 
-#### Trust Issue
+### Motivation
+Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
+
+From a business perspective, the cost of losing a random non-host user (someone who does not list any rooms) is most likely more than the cost of losing a random host user (someone who does list a room(s)). This can be derived by compairing the company's $200 reward for referring new place hosts and $150 reward for referring new experience hosts to the company's $0 reward for referring new users.
+
+So if the situation is not clear, or for any less innocent reason that justifies it, siding with the host by default would be a wise business decision. Even though it is not necessarily right.
+
+#### Trust Issue being Addressed - What do I think I have?
 Disputes are resolved in an honest and fair way without 3rd party (corporate) interests influncing outcomes.
+
+### What it Does
+By decentralizing disputes to one's peers, Decentralized Autonomous Resolutions (DAR) ensures an open and fair dispute resolution.
+
+The `Arbitrator.sol` contract is the capstone of DAR and sets up a platform where offers can be proposed and processed through completion. What makes it cool is the dispute resolution process.
+
+Disputes are initially hoped to be worked out between the 2 parties involved (e.g. renter & landlord); but if they are not, they are opened up to be voted on by trusted dispute resolutionists.
+
+In order to be a dispute resolutionists, users stake (lock up $) `Token`. To discourage dishonest participation, these dispute resolutionists risk both their reputation and their stake ($) when voting. Dispute resolutionists are rewarded for good participation with `Token`.
+
+#### Moving disputes to a blockchain means the votes are public.
+So if I am a dispute resolutionist looking to avoid "dishonest participation", why not just look and vote the same as everybody else voted?
+
+Well, to make sure dispute resolutionists are not influenced to vote a certain way based on how other dispute resolutionists vote, all votes are encrypted until the voting period has ended. At that time the private key is made public by being published on chain, so anyone can verify the results.
+
+The goal of this is to make sure dispute resolutionists take time to review the contents of a dispute, and actually assess the situation, before voting.
+
+Because they are not rewarded based on future earnings, and their voting record is public, dispute resolutionists are not motivated to vote with any intention other than "doing the right thing".
 
 ### How it Works
 **Agreement is made - Offer accepted**
@@ -15,7 +39,7 @@ Disputes are resolved in an honest and fair way without 3rd party (corporate) in
 
 **Something goes wrong - Dispute opened**
 
-3. One of the parties (`offeror` or `offeree`) feels something went wrong, and would like to be compensated accordingly.
+3. One of the parties (`offeror` or `offeree`) feels something went wrong, and would like to be compensated accordingly
     - That party [opens](https://github.com/gumdropsteve/dispute-resolution/blob/main/contracts/Arbitrator.sol#L139-L176) a _Dispute_ and becomes the _Dispute_'s `plantiff`
     - The other party, now the _Dispute_'s `defendant`, is notified
 4. The `defendant` has a few options: 1. Settle 2. Counter 3. Decline 
@@ -31,7 +55,7 @@ Disputes are resolved in an honest and fair way without 3rd party (corporate) in
         - A private key (used for encrypting & decrypting the votes) is supplied by the `plaintiff` to the `defendant` as a dispute is opened
         - This private key is made public once the voting period has ended
     - Voters are rewarded for "good behavior" and disincentivized from "bad behavior"
-        - Example: Alice rented Lee's apartment in San Clemente for a week and brought her dogs even though the agreement clearly stated "no pets allowed". Evidence includes videos from Ring of Alice walking in and out of the apartment with her 2 German Shepherds numerous times over the course of the week, including overnight stays.
+        - Example: Alice rented Lee's apartment for a week and brought her dogs even though the agreement clearly stated "no pets allowed". Evidence includes videos from Ring of Alice walking in and out of the apartment with her 2 German Shepherds numerous times over the course of the week, including overnight stays.
         - Example "good behavior": voting Alice is in the wrong
         - Example "bad behavior": voting that Lee is in the wrong; manipulating the system to assist Alice or Lee
 6. The voting period ends, the `plaintiff` and `defendant` decrypt and count the votes, and the private key is made public on chain
@@ -82,24 +106,26 @@ truffle test ./test/Token_test.js
 > A peer-to-peer hypermedia protocol designed to make the web faster, safer, and more open.
 - [GitHub](https://github.com/ipfs/ipfs)
 - [Website](https://ipfs.io/)
-- We used IPFS to store _Agreement.documents_, _Dispute.plantiffEvidence_ and _Dispute.defendantEvidence_ files
+
+We used IPFS to store _Agreement.documents_, _Dispute.plantiffEvidence_ and _Dispute.defendantEvidence_ files.
 
 <img align="right" width="150" height="150" src="https://lh6.googleusercontent.com/3WDXeY6cvDfW5-P6rmqtun9dRYYCtQa_c4MFqjNssE2CE4h2t8VfG5iHMADLNaX-Mq8kS7hQeEe99DV7lA-1tpCbtxirq6MFuMiJJQoSJU3vrCpNCuzLzbWWby2Ug7qAn9jfeVKt">
 
 #### NuCypher
-> Cryptographic Infrastructure for Privacy-Preserving Applications
 > A decentralized threshold cryptography network offering interfaces and runtimes for secrets management and dynamic access control.
 - [GitHub](https://github.com/nucypher/)
 - [Website](https://www.nucypher.com/)
-- We used NuCypher to help keep votes private while the voting period is live so that voters are not influenced by other voters, while allowing `plaintiff`s and `defendant`s to decrypt votes to see results
+
+We used NuCypher to help keep votes private while the voting period is live so that voters are not influenced by other voters, while allowing `plaintiff`s and `defendant`s to decrypt votes to see results.
 
 <img align="right" width="150" height="150" src="https://lh3.googleusercontent.com/YSzrZ4MAb3oDhGDo1d0yZ-ET8Bhb5b6RUbKJGXqKPMSFNEt8kKtqDQmyc7TZn6uQJllHQlU6VQxdt3uw2EW_RQEG6dU5py3d3VGcCtOY2U79rbHq5u4rpGFh8lBbnQQzDp7iLO34">
 
 #### SKALE
-Decentralized modular environment for Solidity dApps
+> Decentralized modular environment for Solidity dApps. Elastic Network for Ethereum Scaling.
 - [GitHub](https://github.com/skalenetwork/)
 - [Website](https://skale.network/)
-- We used SKALE to eliminate gas fees and reduce costs
+
+We used SKALE to eliminate gas fees, reduce costs, and accelerate transaction speeds.
 
 
 ## Future Direction
