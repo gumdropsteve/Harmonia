@@ -76,7 +76,7 @@ Because they are not rewarded based on future earnings, and their voting records
 ```
 git clone https://github.com/gumdropsteve/Harmonia
 
-cd dispute-resolution
+cd Harmonia
 
 npm install
 
