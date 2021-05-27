@@ -4,6 +4,9 @@ Help your peers agree.
 ## Description
 Harmonia is a platform for cost effective, scalable, decentralized dispute resolution through NuCypher time encrypted voting, IPFS file storage, and the SKALE blockchain network. Harmonia is peer to peer dispute resolution.
 
+#### Video
+https://youtu.be/4-_B3PqTTvE
+
 ### Motivation
 Every time I have heard about an AirBnb dispute from a guest, it was the worst thing ever. Every time I have heard about an AirBnb dispute from a host, no complaints. What is the commonality? Neither actually knows how AirBnb handles disputes.
 
@@ -69,7 +72,11 @@ Because they are not rewarded based on future earnings, and their voting records
     - If the 2 parties disagree on the vote's results, that is something worth knowing.
 
 ### Architecture diagram
-![Architecture diagram](https://lh6.googleusercontent.com/cxdySU5sqAjYgaeh4c2xwz2E3LEObmPuNeC-SjIsV6nuXpMxHKBzyxJ9sT8qPvQwF0sraY_ocBwWs2LS7XhXnu-0BH6BisiKXjFuotg6psLBhzEBP1tUML69xLENj2B1lF-guVTq)
+<p align="center">
+   <a target="_blank" href="https://youtu.be/jWaRoSa4fzo">
+    <img src="https://lh6.googleusercontent.com/cxdySU5sqAjYgaeh4c2xwz2E3LEObmPuNeC-SjIsV6nuXpMxHKBzyxJ9sT8qPvQwF0sraY_ocBwWs2LS7XhXnu-0BH6BisiKXjFuotg6psLBhzEBP1tUML69xLENj2B1lF-guVTq"/>
+   </a>
+</p>
 
 ## Getting Started
 ### On SKALE
@@ -79,6 +86,8 @@ git clone https://github.com/gumdropsteve/Harmonia
 cd Harmonia
 
 npm install
+
+npm install -g truffle
 
 truffle compile
 
